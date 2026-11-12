@@ -1,0 +1,26 @@
+/* ==========================================================================
+   MENDIZ — Ofertas (ofertas.html y ofertas-<modelo>.html)
+   Páginas generadas con tools/ofertas.py. El listado reutiliza las tarjetas
+   anchas de los listados de categoría (.bike-card--wide, components.css) y
+   la página de cada modelo, la rejilla de montajes de las fichas (.builds,
+   product.css). Aquí solo lo propio de las ofertas.
+   ========================================================================== */
+
+/* Precio anterior, tachado y en gris, tras el de oferta */
+.bike-card__was,
+.page-head s {
+  margin-left: var(--s-2);
+  color: var(--c-ink-3);
+}
+
+/* Foto pendiente: el nombre del modelo en gris sobre el fondo de producto */
+.bike-card__media--pending { min-height: 14rem; }
+.bike-card__media--pending .display {
+  font-size: clamp(4rem, 14vw, 10rem);
+  line-height: 1;
+  color: rgb(0 0 0 / 0.08);
+}
+
+.offers__empty,
+.offers__pending { padding-block: var(--s-6); }
+.offers__empty a { text-decoration: underline; text-underline-offset: 4px; }

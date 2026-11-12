@@ -1,0 +1,109 @@
+/* ==========================================================================
+   MENDIZ — Only For You · «Configura tu Mendiz» (only-for-you-configura.html)
+   Se apoya en el asesor de «¿Qué Mendiz es para ti?» (css/que-mendiz.css:
+   barra, progreso, opciones .finder-option, resultado). Aquí solo lo propio:
+   · todas las opciones con imagen (.finder-option--photo) y, mientras falta la foto,
+     placeholder con icono y nombre del archivo esperado (.ofy-placeholder);
+   · rejilla según el número de opciones: 2 → 2 columnas, 4 → 4, resto → 3;
+   · precio de partida en cada opción;
+   · «Sin preferencia» con el hueco de imagen en discontinuo;
+   · en el resultado, el montaje y la combinación de los diez niveles.
+   Lógica en js/ofy-asesor.js.
+   ========================================================================== */
+
+/* Precio de partida de cada opción */
+.ofy-option__price {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  letter-spacing: var(--ls-sm);
+  color: var(--c-ink);
+}
+.finder-option--photo .ofy-option__price { margin-top: var(--s-1); }
+
+/* Rejilla: en todo el flujo, tarjetas del tamaño del paso de terreno
+   (3 columnas en escritorio, sea cual sea el número de opciones) */
+@media (min-width: 768px) { .finder__options--photo[class*="finder__options--n"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Hueco de imagen y placeholder ------------------------------------------------
+   El placeholder queda debajo y la foto encima; si la foto no existe,
+   js/ofy-asesor.js quita la <img> y se ve el placeholder. */
+.ofy-media { position: relative; }
+.ofy-media img { position: relative; z-index: 1; }
+/* Componentes (horquilla, transmisión, ruedas): fondo gris tras la imagen */
+.ofy-media--component { background: var(--c-subtle); }
+.ofy-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  text-align: center;
+  color: var(--c-ink-3);
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--c-line) 50%, transparent calc(50% + 0.5px)),
+    var(--c-subtle);
+}
+.ofy-placeholder .material-symbols-outlined {
+  font-size: 40px;
+  font-variation-settings: "wght" 200;
+  color: var(--c-ink-2);
+  background: var(--c-subtle);
+  border-radius: 50%;
+  padding: var(--s-2);
+}
+
+/* Sin preferencia: hueco en discontinuo, sin diagonal */
+.ofy-option--any .ofy-media { border: 1px dashed var(--c-line); background: transparent; }
+.ofy-option--any .ofy-placeholder { background: transparent; }
+.ofy-option--any .ofy-placeholder .material-symbols-outlined { background: transparent; }
+
+/* Resultado ---------------------------------------------------------------- */
+.ofy-pick__build { color: var(--c-ink-2); }
+.ofy-pick__build strong { font-weight: var(--fw-medium); color: var(--c-ink); }
+
+/* Tu combinación: nivel a la izquierda y valor a la derecha, con filete fino.
+   Los niveles que no se han preguntado (salen del modelo) van en gris. */
+.ofy-combo {
+  display: grid;
+  margin-block: var(--s-3) var(--s-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  letter-spacing: var(--ls-sm);
+}
+.ofy-combo > div {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--s-3);
+  padding-block: var(--s-2);
+  border-top: 1px solid var(--c-line);
+}
+.ofy-combo > div:last-child { border-bottom: 1px solid var(--c-line); }
+.ofy-combo dt { color: var(--c-ink-3); }
+.ofy-combo dd { color: var(--c-ink); font-weight: var(--fw-medium); }
+.ofy-combo .is-auto dd { color: var(--c-ink-2); font-weight: inherit; }
+
+.ofy-pick__note { max-width: 44ch; font-size: var(--fs-sm); color: var(--c-ink-2); }
+.ofy-pick__price span { color: var(--c-ink-3); font-size: var(--fs-sm); }
+
+/* Fotografías del asesor: mismo lienzo y producto completo también en móvil. */
+.ofy-media--photo { background: #fff; }
+.ofy-media--photo img { width: 100%; height: 100%; object-fit: contain; }
+.ofy-media__note {
+  position: absolute; z-index: 2; left: 12px; right: 12px; bottom: 10px;
+  width: fit-content; padding: 3px 6px; background: rgb(255 255 255 / .94);
+  color: var(--c-ink-2); font-size: 11px; line-height: 1.35;
+}
+@media (max-width: 767px) {
+  .ofy-media--photo:has(.ofy-media__note) { display: flex; flex-direction: column; }
+  .ofy-media--photo:has(.ofy-media__note) img { min-height: 0; flex: 1; }
+  .ofy-media__note { position: static; padding: 3px; font-size: 9px; }
+}
+
+/* Tipo de bicicleta: fotos de la colección con la bici en uso. */
+.ofy-media--lifestyle img { object-fit: cover; }
+
+/* Componentes: el blanco de las fotografías deja ver el mismo gris de fondo. */
+.ofy-media--component { background: #f5f5f5; isolation: isolate; }
+.ofy-media--component img { mix-blend-mode: darken; }

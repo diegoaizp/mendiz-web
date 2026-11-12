@@ -1,0 +1,122 @@
+/* ==========================================================================
+   MENDIZ — Sobre Mendiz. Solo usa tokens de css/tokens.css.
+   Orden: cifras · orígenes (+vídeo) · Eusebio (+resultados) · empresa ·
+   banda «Trabaja con Mendiz» (.dealer-band del sistema).
+   ========================================================================== */
+
+/* Cifras: Round 8 Four para el número, Geist para la etiqueta */
+.about-figures { padding-bottom: var(--s-section); }
+.about-figures__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--gutter); border-top: 1px solid var(--c-line); padding-top: var(--s-6); }
+.about-figures__list > div { display: grid; gap: var(--s-2); align-content: start; }
+.about-figures dt { font-size: var(--fs-sm); line-height: var(--lh-sm); letter-spacing: var(--ls-sm); max-width: 22ch; order: 2; }
+.about-figures dd { font-size: var(--fs-model-card); order: 1; }
+@media (min-width: 1024px) { .about-figures__list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Orígenes: titular y texto a la izquierda, vídeo a todo el ancho debajo */
+.about-intro { display: grid; gap: var(--s-7); padding-bottom: var(--s-section); }
+.about-intro__text { display: grid; gap: var(--s-4); align-content: start; }
+.about-intro__text p:not(.lead) { color: var(--c-ink-2); max-width: var(--w-read); }
+.about-intro .lead { max-width: 36ch; }
+.about-video { aspect-ratio: 16 / 9; background: var(--c-product); }
+.about-video iframe { width: 100%; height: 100%; border: 0; display: block; }
+@media (min-width: 1024px) {
+  .about-intro__text { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+  .about-intro__text > h2 { grid-column: 1 / span 5; grid-row: 1 / span 2; }
+  .about-intro__text > .lead { grid-column: 7 / -1; }
+  .about-intro__text > p:not(.lead) { grid-column: 7 / -1; }
+}
+
+/* Eusebio: texto + fotos, y debajo los resultados en filas con filete */
+.about-eusebio { display: grid; gap: var(--s-7); padding-bottom: var(--s-section); }
+.about-eusebio__text { display: grid; gap: var(--s-4); align-content: start; }
+.about-eusebio__text p { color: var(--c-ink-2); max-width: var(--w-read); }
+.about-eusebio__media { display: grid; gap: var(--gutter); align-items: end; grid-template-columns: 1fr 2fr; }
+.about-eusebio__media img { width: 100%; height: auto; border-radius: var(--r-media); background: var(--c-product); }
+.about-results { border-top: 1px solid var(--c-line); }
+.about-results li {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  align-items: baseline;
+  gap: var(--s-4);
+  padding-block: var(--s-4);
+  border-bottom: 1px solid var(--c-line);
+}
+.about-results__year { font-size: var(--fs-sm); color: var(--c-ink-3); }
+.about-results__what { font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); }
+.about-results__position { font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); font-weight: var(--fw-medium); }
+@media (min-width: 1024px) {
+  .about-eusebio { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); row-gap: var(--s-9); align-items: start; }
+  .about-eusebio__text { grid-column: 1 / span 5; }
+  .about-eusebio__media { grid-column: 7 / -1; align-self: center; }
+  .about-results { grid-column: 1 / -1; }
+}
+
+/* Empresa */
+.about-company .container { display: grid; gap: var(--s-7); }
+.about-company__head { display: grid; gap: var(--s-4); align-content: start; }
+.about-company .lead { max-width: 44ch; color: var(--c-ink-2); }
+.about-company__cols { display: grid; gap: var(--s-5); }
+.about-company__cols p { color: var(--c-ink-2); max-width: var(--w-read); }
+.about-company__media { display: grid; gap: var(--gutter); }
+.about-company__media .media { aspect-ratio: 3 / 2; }
+@media (min-width: 768px) {
+  .about-company__cols { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--gutter); }
+  .about-company__media { grid-template-columns: 5fr 3fr; }
+  .about-company__media .media { aspect-ratio: auto; min-height: 100%; }
+  .about-company__media .media:first-child { aspect-ratio: 3 / 2; }
+}
+@media (min-width: 1024px) {
+  .about-company__head { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); align-items: end; }
+  .about-company__head > h2 { grid-column: 1 / span 5; }
+  .about-company__head > .lead { grid-column: 7 / -1; }
+}
+
+/* Trabaja con Mendiz */
+.about-join .about-join__text { max-width: 46ch; color: var(--c-on-dark-2); }
+.about-join .dealer-band__title { max-width: 16ch; }
+
+/* Hero a pantalla completa: mismo patrón que el de la home (.cover-hero en
+   css/home.css), recogido aquí porque esta página no carga home.css.
+   La cabecera va superpuesta (site-header--overlay). */
+.about-hero {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--c-ink);
+  color: var(--c-paper);
+}
+.about-hero .cover-hero__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 40% 60%;
+  pointer-events: none;
+  animation: settle 1.2s var(--ease) both;
+}
+.about-hero .cover-hero__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: end;
+  gap: var(--s-5);
+  padding-top: calc(var(--header-h) + var(--s-7));
+  padding-bottom: var(--s-9);
+}
+/* Velo: arriba para el menú en blanco, abajo para el texto */
+.about-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.32), rgb(0 0 0 / 0.14) 90px, rgb(0 0 0 / 0) 200px),
+    linear-gradient(to top, rgb(0 0 0 / 0.65), rgb(0 0 0 / 0) 55%);
+}
+.about-hero .cover-hero__content > h1 { max-width: 18ch; animation: rise var(--dur-media) 200ms var(--ease) both; }
+.about-hero .cover-hero__content > p { max-width: 44ch; color: var(--c-on-dark-2); font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); }
+.about-hero + .about-figures { padding-top: var(--s-section); }

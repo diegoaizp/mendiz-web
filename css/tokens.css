@@ -1,0 +1,123 @@
+/* ==========================================================================
+   MENDIZ — Design tokens
+   Todas las decisiones de diseño viven aquí. Cambiar un valor aquí lo
+   cambia en todas las páginas.
+   Cortes de trabajo (no se pueden usar como variables en @media):
+   768px tablet · 1024px escritorio / menú completo.
+   ========================================================================== */
+
+:root {
+  /* Color ----------------------------------------------------------------
+     Base blanco y negro. El color entra por la fotografía.               */
+  --c-ink: #1d1d1d;          /* color.text / surface.inverse */
+  --c-ink-2: #5c5c5c;        /* texto secundario (6,5:1 sobre blanco) */
+  --c-ink-3: #767676;        /* legales, metadatos (4,5:1 sobre blanco) */
+  --c-paper: #ffffff;        /* color.surface / text.inverse */
+  --c-subtle: #f5f5f5;       /* color.surface.subtle */
+  --c-line: #dddddd;         /* color.border */
+  --c-product: #ececec;      /* fondo de las fotos de producto */
+  --c-footer: #000000;       /* footer */
+  --c-line-dark: rgb(255 255 255 / 0.14); /* divisores sobre oscuro */
+  --c-on-dark-2: rgb(248 248 245 / 0.7); /* texto secundario sobre imagen/oscuro */
+  /* Acento común (acordado 31/10): CTAs principales, enlaces importantes y
+     estados seleccionados. Su par oscuro vive en body.is-dark (css/base.css). */
+  --c-accent: #1d1d1d;
+  --c-accent-hover: #3a3a3a;
+  --c-on-accent: #ffffff;
+  --c-focus: #1d1d1d;
+  /* Estado «cambiado» del configurador (5,1:1 sobre blanco, también como
+     fondo de texto blanco) */
+  --c-changed: #1a7f37;
+  /* Error de formulario (6,6:1 sobre blanco) */
+  --c-error: #b3261e;
+
+  /* Tipografía ------------------------------------------------------------
+     Geist: lectura, interfaz, precios, tablas.
+     Round 8 Four (css/fonts.css): nombres de modelo y titulares seleccionados. */
+  --f-sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --f-display: "Round 8 Four", "Helvetica Neue Condensed", Impact, sans-serif;
+  --fw-display: 700;   /* Round 8 Four */
+
+  /* Geist — escala tipográfica.
+     Solo dos pesos: 400 texto, botones y navegación · 500 titulares y énfasis.
+     Cada tamaño lleva su interlineado y su tracking negativo; los titulares
+     saltan de escala en 768 (sección, editorial) y 1024 (tarjeta).        */
+  --fw-regular: 400;
+  --fw-medium: 500;
+
+  --fs-label: 0.75rem;   --lh-label: 1.333;              /* 12/16  etiqueta, legal */
+  --fs-sm: 0.875rem;     --lh-sm: 1.286;  --ls-sm: -0.007em;    /* 14/18  nav, meta, notas */
+  --fs-base: 1rem;       --lh-body: 1.5;  --ls-base: -0.0125em; /* 16/24  cuerpo, botones */
+  --fs-lead: 1.125rem;   --lh-lead: 1.444; --ls-lead: -0.017em; /* 18/26 → 20/28  párrafo, entradilla, precio */
+  --fs-card: 1.25rem;    --lh-card: 1.4;   --ls-card: -0.025em; /* 20/28 → 28/32  titular de tarjeta (500) */
+  --fs-section: 2rem;    --lh-section: 1.125; --ls-section: -0.035em;  /* 32/36 → 44/48  titular de sección (500) */
+  --fs-editorial: 2.5rem; --lh-editorial: 1.1; --ls-editorial: -0.045em; /* 40/44 → 64/64  titular editorial (500) */
+
+  /* Round 8 Four */
+  --fs-model: clamp(5rem, 14vw, 12.5rem);                /* 80-200 nombre en hero */
+  --fs-model-card: clamp(3.5rem, 2.5rem + 3vw, 6rem);    /* nombre en tarjeta */
+  --lh-display: 0.88;
+
+  /* Espacio: 4 · 8 · 12 · 16 · 24 · 32 · 40 · 56 · 80 · 112 · 160 -------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 2.5rem;
+  --s-8: 3.5rem;
+  --s-9: 5rem;
+  --s-10: 7rem;
+  --s-11: 10rem;
+  --s-section: clamp(3rem, 1.5rem + 5vw, 7rem);   /* 48-64 móvil · 80-112 escritorio */
+
+  /* Layout: 4 / 8 / 12 columnas ------------------------------------------ */
+  --margin: clamp(1.25rem, 0.5rem + 3vw, 4rem);  /* 20 móvil · 24-32 tablet · 40-64 escritorio */
+  --gutter: 1rem;
+  --w-read: 64ch;           /* 55-70 caracteres por línea */
+  /* Header: una sola fila en escritorio (≥1280).
+     --header-h es la altura total y la usan los sticky de todas las páginas. */
+  --header-bar: 56px;
+  --header-nav: 0px;
+  --header-h: 56px;
+  --subnav-h: 56px;
+
+  /* Forma ---------------------------------------------------------------- */
+  --r-media: 4px;           /* medios contenidos y tarjetas */
+  --r-control: 9999px;      /* cápsula */
+  --control-h: 44px;
+  --control-h-lg: 50px;
+  --control-h-sm: 34px;
+  --target: 44px;           /* área táctil mínima */
+
+  /* Movimiento: animar opacity y transform -------------------------------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur: 280ms;
+  --dur-media: 480ms;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 1.25rem;
+    --fs-lead: 1.25rem;    --lh-lead: 1.4;   --ls-lead: -0.02em;       /* 20/28 */
+    --fs-section: 2.75rem; --lh-section: 1.091; --ls-section: -0.04em; /* 44/48 */
+    --fs-editorial: 4rem;  --lh-editorial: 1; --ls-editorial: -0.05em; /* 64/64 */
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 1.5rem;
+    --fs-card: 1.75rem;    --lh-card: 1.143; --ls-card: -0.03em;     /* 28/32 */
+  }
+}
+/* Header en una sola fila (secciones · logo · enlaces y cuenta). Por debajo
+   de 1280 no caben las tres cosas en línea y se usa el cajón móvil. */
+@media (min-width: 1280px) {
+  :root {
+    --header-bar: 64px;
+    --header-nav: 64px;
+    --header-h: 64px;
+  }
+}

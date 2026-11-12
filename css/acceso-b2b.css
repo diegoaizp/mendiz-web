@@ -1,0 +1,217 @@
+/* ==========================================================================
+   MENDIZ — Acceso B2B (área privada para tiendas)
+   Formulario a la izquierda y foto a la derecha; en móvil, la foto debajo.
+   Comportamiento: js/acceso-b2b.js.
+   Solo usa tokens de css/tokens.css.
+   ========================================================================== */
+
+.b2b {
+  display: grid;
+  gap: var(--s-8);
+  padding-block: var(--s-6) var(--s-9);
+}
+@media (min-width: 1024px) {
+  .b2b {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: stretch;
+    padding-top: var(--s-5);
+  }
+  .b2b__panel { grid-column: 1 / span 5; }
+  .b2b__media { grid-column: 7 / -1; }
+}
+
+/* Panel ------------------------------------------------------------------ */
+.b2b__panel {
+  display: grid;
+  gap: var(--s-7);
+  align-content: start;
+  max-width: 30rem;
+}
+@media (min-width: 1024px) {
+  .b2b__panel { max-width: none; padding-top: var(--s-7); }
+}
+.b2b__head { display: grid; gap: var(--s-4); }
+.b2b__head .eyebrow { color: var(--c-ink-2); }
+.b2b__head p { max-width: 40ch; }
+
+/* Formulario --------------------------------------------------------------- */
+.b2b-form { display: grid; gap: var(--s-5); }
+.b2b-form__item { display: grid; gap: var(--s-2); }
+.b2b-form__label {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-medium);
+}
+
+/* Campo en cápsula: .field, en css/components.css */
+
+/* Contraseña: botón para mostrarla dentro de la cápsula */
+.field--password input { padding-right: var(--s-2); }
+.field__toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--target);
+  height: var(--target);
+  margin-right: 1px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-ink-2);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.field__toggle:hover { color: var(--c-ink); background: var(--c-subtle); }
+.field .field__toggle .material-symbols-outlined { color: inherit; pointer-events: none; }
+.field:has(.field__toggle:focus-visible) { outline: none; }
+.field__toggle:focus-visible { outline-offset: -2px; }
+
+/* Error */
+.field.is-invalid { border-color: var(--c-error); }
+.field.is-invalid:focus-within { outline-color: var(--c-error); }
+.b2b-form__error {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--c-error);
+}
+.b2b-form__error[hidden] { display: none; }
+.b2b-form__error .material-symbols-outlined { font-size: 18px; }
+
+/* Recordar + ¿Has olvidado tu contraseña? */
+.b2b-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-5);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.b2b-form__row a { color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 0.2em; }
+.b2b-form__row a:hover { color: var(--c-ink); }
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--target);
+  cursor: pointer;
+}
+.check input {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--c-ink-3);
+  border-radius: var(--r-media);
+  background: var(--c-paper);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.check input::after {
+  content: "";
+  width: 5px;
+  height: 10px;
+  margin-top: -2px;
+  border: solid var(--c-paper);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.check input:hover { border-color: var(--c-ink); }
+.check input:checked { background: var(--c-ink); border-color: var(--c-ink); }
+.check input:checked::after { transform: rotate(45deg) scale(1); }
+
+.b2b-form .btn[type="submit"] { width: 100%; margin-top: var(--s-2); }
+.b2b-form .btn[aria-busy="true"] { cursor: progress; }
+
+/* Aviso tras enviar (error de acceso o prototipo sin conexión) */
+.b2b-form__status {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-media);
+  background: var(--c-subtle);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--c-ink-2);
+}
+.b2b-form__status[hidden] { display: none; }
+.b2b-form__status .material-symbols-outlined { flex: none; font-size: 20px; color: var(--c-ink); }
+
+/* Tiendas que aún no trabajan con Mendiz ----------------------------------- */
+.b2b__join {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--c-line);
+}
+.b2b__join p { color: var(--c-ink-2); max-width: 44ch; }
+.b2b__join .btn { margin-top: var(--s-2); }
+.b2b__help { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+
+/* Foto con lo que hay dentro del área ------------------------------------- */
+.b2b__media {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-media);
+  background: var(--c-product);
+  color: #fff;
+}
+@media (min-width: 768px) and (max-width: 1023px) { .b2b__media { aspect-ratio: 3 / 2; } }
+@media (min-width: 1024px) {
+  .b2b__media { aspect-ratio: auto; min-height: min(46rem, calc(100svh - var(--header-h) - var(--s-9))); }
+}
+.b2b__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 34% 50%;  /* el ciclista, a un tercio de la foto */
+}
+/* Velo bajo la lista: el camino de la foto es claro, así que oscurece
+   bastante abajo y se abre rápido hacia el ciclista. */
+.b2b__media::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.78) 0%, rgb(0 0 0 / 0.55) 40%, rgb(0 0 0 / 0) 100%);
+  pointer-events: none;
+}
+.b2b__media figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+}
+@media (min-width: 768px) { .b2b__media figcaption { padding: var(--s-7); } }
+.b2b__list {
+  display: grid;
+  gap: var(--s-2);
+  padding: 0;
+  list-style: none;
+  color: rgb(255 255 255 / 0.88);
+}
+.b2b__list li { display: flex; align-items: center; gap: var(--s-2); }
+.b2b__list .material-symbols-outlined { font-size: 20px; color: #fff; }
+
+/* Móvil: la foto es baja y la lista taparía al ciclista; va debajo, sobre negro */
+@media (max-width: 767px) {
+  .b2b__media { aspect-ratio: auto; display: grid; background: var(--c-ink); }
+  .b2b__media img { position: static; aspect-ratio: 4 / 3; height: auto; }
+  .b2b__media::after { content: none; }
+  .b2b__media figcaption { position: static; }
+}

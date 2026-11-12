@@ -1,0 +1,598 @@
+/* ==========================================================================
+   MENDIZ — Configurador (Only For You) · configurador-f14.html
+   Composición y aire (medidas a 1440 px):
+   · columna de 420 px de contenido con 80 px a cada lado y 80 px arriba
+   · titular 44/48 · precio 28/32 · nota 14/18 en gris
+   · 120 px del precio a la primera sección · 60 px entre secciones
+   · título de sección 24/30 (regular) y 20 px hasta las opciones
+   · opción = tarjeta a todo el ancho: borde 2 px #c9c9c9, radio 4 px,
+     relleno 20 px, 8 px entre tarjetas; nombre 20/28 y detalle 16/24 en
+     gris; elegida con borde negro; muestra de color de 32 px
+   · al final, bloque «Tu …» (44/48 + 32/36) con precio y CTA
+   configurator (escena + columna) · configurator-section · configurator-card
+   configurator-part (filas de color y componentes) · configurator-checkout
+   configurator-bar (barra fija) · configurator-modal (geometría)
+   configurator-customizer (personalizador de color, panel lateral)
+   closed-build-* (montaje cerrado, al final)
+   ========================================================================== */
+
+/* Escena + columna ----------------------------------------------------------
+   <section.configurator>
+     <div.configurator__lead> escena + panel con los pasos </div>
+     <div.configurator__panel--end> «Tu F14» </div>
+   Móvil: la escena se fija arriba (sticky) mientras dura .configurator__lead y se
+   suelta al llegar a «Tu F14».
+   ≥1024: .configurator__lead no cuenta (display: contents); la escena ocupa la columna
+   izquierda en las dos filas y se fija bajo la cabecera; la derecha avanza
+   con el scroll de la página. Sin scroll interno.                          */
+.configurator {
+  --configurator-x: var(--margin);            /* margen lateral de la columna */
+  --configurator-w: 30rem;                    /* 480 px de contenido */
+  --configurator-card-line: #c9c9c9;          /* borde de tarjeta sin elegir */
+  --configurator-gap-top: var(--s-8);         /* del precio a la primera sección */
+  --configurator-gap: var(--s-8);             /* entre secciones */
+  display: grid;
+  border-bottom: 1px solid var(--c-line);
+}
+@media (min-width: 1024px) {
+  /* Proporción: ~59 % imagen / 41 % columna */
+  .configurator {
+    grid-template-columns: minmax(0, 59fr) minmax(0, 41fr);
+    align-items: start;
+    --configurator-x: clamp(2rem, 4vw, 3.5rem);     /* 41 px a 1024 · 56 px a 1440 */
+    --configurator-gap-top: 7.5rem;                 /* 120 px */
+    --configurator-gap: 3.75rem;                    /* 60 px */
+  }
+  .configurator__lead { display: contents; }
+  .configurator__stage { grid-column: 1; grid-row: 1 / 3; }
+  .configurator__panel { grid-column: 2; grid-row: 1; }
+  .configurator__panel--end { grid-row: 2; }
+}
+
+/* Escena -------------------------------------------------------------------- */
+.configurator__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  background: var(--c-product);
+  container-type: size;             /* la bici se mide en cqw/cqh */
+}
+/* Móvil: anclada arriba, por encima de los pasos que pasan por debajo */
+.configurator__stage { position: sticky; top: var(--header-h); z-index: 2; }
+@media (min-width: 1024px) {
+  .configurator__stage {
+    z-index: auto;
+    height: calc(100svh - var(--header-h));
+    aspect-ratio: auto;
+  }
+}
+
+.configurator__ghost {
+  position: absolute;
+  inset: auto 0 50% 0;
+  transform: translateY(50%);
+  margin: 0;
+  font-size: clamp(10rem, 30vw, 34rem);
+  line-height: 1;
+  text-align: center;
+  color: rgb(0 0 0 / 0.04);
+  pointer-events: none;
+  user-select: none;
+}
+/* La bici por capas (sombra · color · trama · pegatinas · brillos ·
+   componentes), todas del mismo lienzo 2500 × 1667 y apiladas en la misma
+   caja. Hasta el 88 % del ancho y el 78 % del alto de la escena. */
+.configurator__bike {
+  position: relative;
+  width: min(88cqw, 1100px, 117cqh);  /* 117cqh = 78 % del alto × 1,5 */
+  aspect-ratio: 2500 / 1667;
+  transition: opacity var(--dur) var(--ease);
+}
+.configurator__bike img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
+.configurator__bike img[hidden] { display: none; }
+.configurator__bike.is-loading { opacity: 0.4; }
+/* Móvil: la escena mantiene su caja (3:2) y la bici crece dentro. El lienzo
+   trae márgenes transparentes: lo que sobresale de la caja es aire y se
+   recorta (overflow: hidden en .configurator__stage). */
+@media (max-width: 767px) {
+  .configurator__bike { width: 106cqw; }
+}
+
+.configurator__back {
+  position: absolute;
+  top: var(--s-4);
+  left: var(--margin);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--target);
+  font-size: var(--fs-sm);
+  color: var(--c-ink);
+}
+.configurator__back .material-symbols-outlined { font-size: 18px; transition: transform var(--dur-fast) var(--ease); }
+.configurator__back:hover .material-symbols-outlined { transform: translateX(-3px); }
+
+@media (max-width: 767px) {
+  .configurator__back { left: var(--s-4); top: var(--s-2); }
+}
+
+/* Columna ----------------------------------------------------------------- */
+.configurator__panel { background: var(--c-paper); }
+.configurator__body {
+  display: grid;
+  gap: var(--configurator-gap);
+  padding: var(--s-6) var(--configurator-x) var(--configurator-gap);   /* abajo: el hueco hasta «Tu F14» */
+}
+.configurator__body > * { width: 100%; max-width: var(--configurator-w); }
+.configurator__panel--end .configurator__body { padding-top: 0; padding-bottom: var(--s-9); }
+@media (min-width: 1024px) {
+  .configurator__body { padding-top: var(--s-9); }
+  .configurator__panel--end .configurator__body { padding-bottom: 0; }
+}
+
+/* Cabecera: nombre, precio y nota. Lo que sigue queda a 120 px. */
+.configurator__head { margin-bottom: calc(var(--configurator-gap-top) - var(--configurator-gap)); }
+.configurator__head .eyebrow { margin-bottom: var(--s-3); }
+.configurator__title .display { font-size: clamp(4rem, 1.5rem + 4.5vw, 6rem); }   /* nombre del modelo en Round 8 Four: 64 móvil · ~89 a 1440 · 96 máx. */
+.configurator__price { margin-top: 1.25rem; }
+.configurator__total {
+  font-size: var(--fs-card);                 /* 20 móvil · 28/32 ≥1024 */
+  line-height: var(--lh-card);
+  letter-spacing: var(--ls-card);
+  font-variant-numeric: tabular-nums;
+}
+.configurator__note { margin-top: 2px; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+
+/* Sección: título 32/36 regular + (pista) + opciones a 20 px ------------- */
+.configurator-section { display: grid; gap: 1.25rem; }
+.configurator-section__head { display: grid; gap: var(--s-1); }
+.configurator-section__title {
+  font-size: 1.75rem;                        /* 28/32 móvil · 32/36 ≥1024 */
+  font-weight: var(--fw-regular);
+  line-height: 1.143;
+  letter-spacing: -0.03em;
+  color: var(--c-ink);
+}
+@media (min-width: 1024px) { .configurator-section__title { font-size: 2rem; line-height: 1.125; letter-spacing: -0.035em; } }
+.configurator-section__hint { font-size: var(--fs-base); color: var(--c-ink-3); }
+.configurator-section__hint .material-symbols-outlined { font-size: 18px; vertical-align: -3px; color: var(--c-ink); }
+.configurator-section__link { justify-self: start; }
+/* Subtítulo dentro de una sección (Acabado), al nivel de los grupos de componentes */
+.configurator-subtitle { padding: 0 0 var(--s-3); font-size: var(--fs-lead); font-weight: var(--fw-medium); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); color: var(--c-ink); }   /* 18 móvil · 20/28, como .configurator-group__title */
+
+.configurator-badge {
+  padding: 2px var(--s-2);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-control);
+  font-size: var(--fs-label);
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+/* «Cambiado», en verde */
+.configurator-badge--changed { border-color: var(--c-changed); background: var(--c-changed); color: #fff; }
+
+/* Tarjeta de opción (cuadro, montaje, acabado, talla, opciones de componente)
+   <label class="configurator-card"><input type="radio"> [muestra] texto [precio]</label> */
+.configurator-cards { display: grid; gap: var(--s-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.configurator-cards--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.configurator-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  padding: 1.25rem;
+  border: 2px solid var(--configurator-card-line);
+  border-radius: var(--r-media);
+  background: var(--c-paper);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.configurator-card:hover { border-color: var(--c-ink-3); }
+.configurator-card:has(input:checked) { border-color: var(--c-ink); }
+.configurator-card:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.configurator-card input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.configurator-card__text { display: grid; flex: 1; min-width: 0; }
+.configurator-card__name { font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); color: var(--c-ink); }
+.configurator-card__sub { font-size: var(--fs-base); line-height: var(--lh-body); color: var(--c-ink-3); }
+.configurator-card__aside { flex: none; font-size: var(--fs-base); font-variant-numeric: tabular-nums; color: var(--c-ink); white-space: nowrap; }
+.configurator-card__aside--muted { color: var(--c-ink-3); }
+/* Flecha de la tarjeta que abre un panel («Personalizado») */
+.configurator-card__go { flex: none; margin-left: calc(var(--s-2) * -1); font-size: 22px; color: var(--c-ink); transition: transform var(--dur-fast) var(--ease); }
+.configurator-card:hover .configurator-card__go { transform: translateX(3px); }
+.configurator-card .configurator-paint__chip { flex: none; }
+/* Tarjetas compactas (acabado dentro del personalizador) */
+.configurator-cards--sm .configurator-card { padding: var(--s-3) var(--s-4); }
+.configurator-cards--sm .configurator-card__name { font-size: var(--fs-base); line-height: var(--lh-body); letter-spacing: 0; }
+
+/* Filas de color y de componentes --------------------------------------------
+   Etiqueta 16 en gris > valor 20. Filete solo arriba y abajo.
+   Editable: botón lápiz que abre las opciones debajo de la fila.
+   No editable: la misma fila, sin botón.                                      */
+/* Grupos: 56 px entre uno y otro; el primero, a 36 px del título de sección */
+.configurator-parts { display: grid; gap: var(--s-8); margin-top: var(--s-4); }
+.configurator-group__title { margin-bottom: var(--s-3); font-size: var(--fs-lead); font-weight: var(--fw-medium); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); color: var(--c-ink); }   /* 18 móvil · 20/28 */
+.configurator-group__list { border-block: 1px solid var(--c-line); }
+
+.configurator-part + .configurator-part { border-top: 1px solid var(--c-line); }
+.configurator-part__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: calc(40px + 2.5rem);           /* todas las filas miden lo mismo, con o sin botón */
+  padding-block: 1.25rem;
+}
+.configurator-part__text { display: grid; min-width: 0; }
+.configurator-part__label { font-size: var(--fs-base); line-height: var(--lh-body); color: var(--c-ink-3); }
+.configurator-part__value { font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); color: var(--c-ink); }
+.configurator-part__value .configurator-badge { margin-left: var(--s-2); vertical-align: 2px; }
+.configurator-part__meta { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+.configurator-part.is-changed .configurator-part__meta { color: var(--c-changed); }
+.configurator-part.is-changed .configurator-part__meta::before { content: "● "; font-size: 0.7em; vertical-align: 1px; }
+
+.configurator-part__edit {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--c-line);
+  border-radius: 50%;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.configurator-part__edit:hover { border-color: var(--c-ink); }
+.configurator-part__edit[aria-expanded="true"] { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-paper); }
+.configurator-part__edit .material-symbols-outlined { font-size: 18px; }
+
+.configurator-part__options { display: grid; gap: var(--s-2); margin: 0; padding: 0 0 1.25rem; border: 0; min-width: 0; }
+.configurator-part__options[hidden] { display: none; }
+.configurator-part__note { font-size: var(--fs-sm); color: var(--c-ink-3); }
+
+/* Color: muestra de 32 px + paleta desplegable */
+.configurator-paint__chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+.configurator-colors { display: flex; flex-wrap: wrap; gap: var(--s-1); margin: 0; padding: 0; border: 0; }
+.configurator-color { position: relative; display: grid; place-items: center; width: var(--target); height: var(--target); border-radius: 50%; cursor: pointer; }
+.configurator-color input { position: absolute; opacity: 0; pointer-events: none; }
+.configurator-color__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.configurator-color::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.configurator-color:hover .configurator-color__dot { transform: scale(0.92); }
+.configurator-color:has(input:checked)::after { border-color: var(--c-ink); }
+.configurator-color:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: 1px; }
+/* Personalizador: muestras de 40 px en cuadrícula, como las de 60 px del oficial */
+.configurator-colors--lg { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: var(--s-1); }
+.configurator-color--lg { width: 52px; height: 52px; justify-self: center; }
+.configurator-color--lg .configurator-color__dot { width: 40px; height: 40px; }
+
+/* Tu F14: resumen, precio y CTA ------------------------------------------- */
+.configurator-checkout { margin-top: calc(var(--configurator-gap-top) - var(--configurator-gap)); }
+/* ≥1024: el bloque mide lo mismo que la escena fija y centra su contenido en
+   vertical. Al final del scroll, la escena se suelta alineada con el final de
+   la columna, así que «Tu F14» y los botones quedan a media altura de la bici. */
+@media (min-width: 1024px) {
+  .configurator-checkout {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100svh - var(--header-h));
+    margin-top: 0;
+    padding-block: var(--s-7);
+  }
+}
+.configurator-checkout__title {
+  font-size: var(--fs-section);                /* 32/36 móvil · 44/48 ≥768 */
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-section);
+  letter-spacing: var(--ls-section);
+}
+.configurator-checkout__sub { font-size: 1.5rem; line-height: 1.25; letter-spacing: -0.02em; }
+@media (min-width: 768px) { .configurator-checkout__sub { font-size: 2rem; line-height: 1.125; letter-spacing: -0.035em; } }
+.configurator-checkout__name { margin-top: var(--s-7); font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); }
+.configurator-checkout__price { margin-top: var(--s-6); }
+.configurator-checkout__cta { width: 100%; margin-top: var(--s-7); }
+.configurator-checkout__more { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--s-2); margin-top: var(--s-2); }
+@media (max-width: 479px) { .configurator-checkout__more { grid-template-columns: minmax(0, 1fr); } }
+.configurator-checkout__more .btn { padding-inline: var(--s-4); white-space: nowrap; }
+
+.configurator__save { gap: var(--s-2); }
+.configurator__save .material-symbols-outlined { font-size: 20px; font-variation-settings: 'FILL' 0; }
+.configurator__save[aria-pressed="true"] .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+
+/* Aviso al guardar: píldora oscura abajo, centrada */
+.configurator__toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--s-6);
+  z-index: 60;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-control);
+  background: var(--c-ink);
+  color: var(--c-paper);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.configurator__toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* Barra fija bajo la cabecera ------------------------------------------------
+   Nombre a la izquierda, precio y CTA a la derecha. Sale
+   de detrás de la cabecera cuando la cabecera de la columna deja de verse
+   y se recoge al llegar a «Tu F14» (js/configurador-bici.js). En móvil va
+   abajo, porque arriba está la foto anclada.                              */
+.configurator-bar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  z-index: 40;                               /* por debajo de la cabecera (50) */
+  border-bottom: 1px solid var(--c-line);
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(12px);
+  transform: translateY(calc(-100% - var(--header-h)));
+  visibility: hidden;
+  transition: transform var(--dur) var(--ease), visibility 0s linear var(--dur);
+}
+.configurator-bar.is-on { transform: none; visibility: visible; transition: transform var(--dur) var(--ease), visibility 0s; }
+.configurator-bar__in {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  min-height: 64px;
+  padding: var(--s-2) var(--margin);
+}
+.configurator-bar__name { flex: 1; min-width: 0; overflow: hidden; font-size: var(--fs-base); white-space: nowrap; text-overflow: ellipsis; }
+.configurator-bar__name strong { font-weight: var(--fw-medium); }
+.configurator-bar__name span { margin-left: var(--s-3); padding-left: var(--s-3); border-left: 1px solid var(--c-line); color: var(--c-ink-2); }
+.configurator-bar__price { font-size: var(--fs-lead); letter-spacing: var(--ls-lead); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 1023px) {
+  .configurator-bar {
+    top: auto;
+    bottom: 0;
+    border-top: 1px solid var(--c-line);
+    border-bottom: 0;
+    transform: translateY(100%);
+  }
+  .configurator__toast { bottom: calc(64px + var(--s-4)); }
+}
+@media (max-width: 599px) {
+  .configurator-bar__in { gap: var(--s-3); padding-inline: var(--s-4); }
+  .configurator-bar__name span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .configurator-bar { transition: none; } }
+
+/* Resumen, debajo del configurador ------------------------------------------
+   Cabecera (título, lo elegido, precio) y desplegables .faq--plus a todo el
+   ancho, como la información técnica de la ficha.                            */
+.configurator-info__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-6);
+  padding-bottom: var(--s-6);
+}
+.configurator-info__titles { display: grid; gap: var(--s-1); min-width: 0; }
+.configurator-info__title {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-section);
+  letter-spacing: var(--ls-section);
+}
+.configurator-info__sum { font-size: var(--fs-base); color: var(--c-ink-2); }
+.configurator-info__price { font-size: var(--fs-sm); color: var(--c-ink-2); white-space: nowrap; }
+.configurator-info__price strong {
+  margin-left: var(--s-1);
+  font-size: var(--fs-card);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-card);
+  letter-spacing: var(--ls-card);
+  color: var(--c-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Modal de geometría -------------------------------------------------------
+   <dialog> casi a pantalla completa: cabecera fija (título, lo elegido,
+   cerrar) y cuerpo con scroll propio con el esquema y la tabla.          */
+.configurator-modal {
+  width: min(1280px, 100vw - 2 * var(--margin));
+  max-width: none;
+  height: calc(100svh - 2 * var(--s-7));
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-media);
+  background: var(--c-paper);
+  color: var(--c-ink);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.25);
+}
+.configurator-modal[open] { display: flex; flex-direction: column; }
+.configurator-modal::backdrop { background: rgb(0 0 0 / 0.55); }
+@media (prefers-reduced-motion: no-preference) {
+  .configurator-modal[open] { animation: configurator-modal-in 320ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .configurator-modal[open]::backdrop { animation: configurator-fade-in 320ms ease; }
+}
+@keyframes configurator-modal-in { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
+@keyframes configurator-fade-in { from { opacity: 0; } }
+@media (max-width: 767px) {
+  .configurator-modal { width: 100vw; height: 100svh; border-radius: 0; }
+}
+html:has(.configurator-modal[open]) { overflow: hidden; }
+
+.configurator-modal__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s-5);
+  padding: var(--s-5) var(--s-7);
+  border-bottom: 1px solid var(--c-line);
+}
+.configurator-modal__titles { display: grid; gap: 2px; min-width: 0; }
+.configurator-modal__title { font-size: var(--fs-card); font-weight: var(--fw-medium); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
+.configurator-modal__sum { overflow: hidden; font-size: var(--fs-sm); color: var(--c-ink-2); white-space: nowrap; text-overflow: ellipsis; }
+.configurator-modal__close {
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  border: 1px solid var(--c-line);
+  border-radius: 50%;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.configurator-modal__close:hover { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-paper); }
+.configurator-modal__close .material-symbols-outlined { font-size: 22px; }
+.configurator-modal__body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-2) var(--s-7) var(--s-8); }
+.configurator-geometry { padding-top: var(--s-6); }
+@media (max-width: 767px) {
+  .configurator-modal__head { grid-template-columns: minmax(0, 1fr) auto; padding: var(--s-4); }
+  .configurator-modal__close { grid-row: 1; grid-column: 2; }
+  .configurator-modal__body { padding-inline: var(--s-4); }
+}
+
+.configurator-recap { display: grid; gap: var(--s-6) var(--s-8); }
+@media (min-width: 768px) { .configurator-recap { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.configurator-recap__group h3 { margin-bottom: var(--s-2); font-size: var(--fs-label); font-weight: var(--fw-medium); letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-ink-2); }
+.configurator-recap__group dl { border-top: 1px solid var(--c-ink); }
+.configurator-recap__group dl > div {
+  display: grid;
+  grid-template-columns: minmax(7em, 2fr) 3fr;
+  gap: var(--s-4);
+  padding-block: var(--s-3);
+  border-bottom: 1px solid var(--c-line);
+  font-size: var(--fs-sm);
+}
+.configurator-recap__group dt { color: var(--c-ink-2); }
+.configurator-recap__group dd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+/* Tecnologías e integración: las tarjetas de «Cada Mendiz es única» de la
+   ficha (.topics, .topic-modal en css/product.css): foto 3:2, título y pop-up
+   con la explicación. Aquí son cuatro: 1 columna en móvil, 2 a ≥768, 4 a ≥1024. */
+@media (min-width: 768px) { .topics__grid.configurator-topics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .topics__grid.configurator-topics { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Personalizador de color (panel lateral) -------------------------------------
+   <dialog> modal que entra desde la derecha. Escritorio: tapa exactamente la
+   columna (41 % del ancho, bajo la cabecera), así la bici sigue a la vista y
+   cambia en directo. Móvil/tableta: ocupa lo que queda bajo la foto anclada
+   (la escena mide 2/3 del ancho), con al menos 28rem de alto.
+   Cabecera fija · cuerpo con scroll propio · pie fijo con precio y «Aplicar». */
+.configurator-customizer {
+  --customizer-x: var(--margin);
+  position: fixed;
+  inset: min(calc(var(--header-h) + 66.667vw), calc(100svh - 28rem)) 0 0 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--c-line);
+  background: var(--c-paper);
+  color: var(--c-ink);
+  box-shadow: 0 -16px 48px rgb(0 0 0 / 0.08);
+}
+@media (min-width: 1024px) {
+  .configurator-customizer {
+    --customizer-x: var(--configurator-x);
+    inset: var(--header-h) 0 0 auto;
+    width: 41%;
+    border-top: 0;
+    border-left: 1px solid var(--c-line);
+    box-shadow: -24px 0 64px rgb(0 0 0 / 0.08);
+    clip-path: inset(0 0 0 -96px);         /* la sombra solo hacia la foto, no sobre la cabecera */
+  }
+}
+.configurator-customizer[open] { display: flex; flex-direction: column; }
+.configurator-customizer::backdrop { background: transparent; }
+html:has(.configurator-customizer[open]) { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .configurator-customizer[open] { animation: configurator-customizer-in 480ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .configurator-customizer.is-closing { animation: configurator-customizer-out 280ms cubic-bezier(0.7, 0, 0.84, 0) forwards; }
+}
+@keyframes configurator-customizer-in { from { transform: translateX(100%); } }
+@keyframes configurator-customizer-out { to { transform: translateX(100%); } }
+
+.configurator-customizer__head,
+.configurator-customizer__body > *,
+.configurator-customizer__foot { width: 100%; }
+/* Cabecera: título y, a la derecha, Cancelar · Aplicar color (donde estaba
+   la ✕). Si no caben en una línea, wrap-reverse deja los botones arriba a la
+   derecha y el título debajo. */
+.configurator-customizer__head {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-4);
+  padding: var(--s-5) var(--customizer-x);
+  border-bottom: 1px solid var(--c-line);
+}
+.configurator-customizer__actions { display: flex; flex: none; gap: var(--s-2); margin-left: auto; }
+.configurator-customizer__title { font-size: 1.75rem; font-weight: var(--fw-regular); line-height: 1.143; letter-spacing: -0.03em; }   /* como .configurator-section__title */
+@media (min-width: 1024px) { .configurator-customizer__title { font-size: 2rem; line-height: 1.125; letter-spacing: -0.035em; } }
+
+.configurator-customizer__body {
+  flex: 1;
+  display: grid;
+  align-content: start;
+  gap: var(--s-7);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-6) var(--customizer-x) var(--s-7);
+}
+.configurator-customizer__body > * { max-width: var(--configurator-w); }
+.configurator-customizer__section { display: grid; gap: var(--s-5); }
+.configurator-customizer__section + .configurator-customizer__section { padding-top: var(--s-7); border-top: 1px solid var(--c-line); }
+.configurator-customizer__field { display: grid; gap: var(--s-3); }
+.configurator-customizer__label { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-3); }
+.configurator-customizer__label .configurator-subtitle { padding: 0; }
+.configurator-customizer__value { font-size: var(--fs-base); color: var(--c-ink-2); }
+.configurator-customizer__price { margin-left: auto; font-size: var(--fs-base); font-variant-numeric: tabular-nums; color: var(--c-ink); }
+.configurator-customizer__sublabel { font-size: var(--fs-base); color: var(--c-ink); }
+.configurator-customizer__note { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+
+.configurator-customizer__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--customizer-x);
+  border-top: 1px solid var(--c-line);
+  background: var(--c-paper);
+}
+
+/* Montaje cerrado (montaje-f14-mpl.html, js/montaje-cerrado.js) ----------------
+   Misma maqueta que el configurador; montaje fijo y solo color y talla
+   elegibles (tarjetas .configurator-card). Etiqueta «Montaje MPL» sobre el nombre y,
+   debajo, código y resumen. */
+.closed-build-tag { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+.closed-build-tag__badge { border-color: var(--c-ink); background: var(--c-ink); color: var(--c-paper); }
+.closed-build-tag__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+.closed-build-code { margin-top: var(--s-3); font-size: var(--fs-base); line-height: var(--lh-body); color: var(--c-ink-3); }
+.closed-build-lead { max-width: 42ch; font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); color: var(--c-ink-2); }
+

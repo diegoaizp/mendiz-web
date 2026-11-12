@@ -1,0 +1,37 @@
+/* ==========================================================================
+   MENDIZ — Servicio y artículos de ayuda (servicio.html, ayuda-*.html)
+   Páginas generadas con tools/servicio.py.
+   ========================================================================== */
+
+/* Tarjetas de guía (.topics, base en components.css), con una línea de
+   entradilla. Móvil: una columna · ≥768: dos · ≥1024: tres. */
+.topics__grid { display: grid; gap: var(--s-7) var(--gutter); }
+@media (min-width: 768px)  { .topics__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .topics__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.topics__note { max-width: 40ch; color: var(--c-ink-2); }
+
+/* Después de la compra: titular a la izquierda y lista de enlaces */
+.service-after { display: grid; gap: var(--s-6) var(--gutter); }
+@media (min-width: 1024px) {
+  .service-after { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+  .service-after > h2 { grid-column: 1 / span 5; }
+  .service-after > ul { grid-column: 7 / -1; }
+}
+.service-links { border-top: 1px solid var(--c-line); }
+.service-links li { border-bottom: 1px solid var(--c-line); }
+.service-links__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-block: var(--s-4);
+  color: var(--c-ink);
+}
+.service-links__item > span { display: grid; gap: 2px; }
+.service-links__item strong { font-size: var(--fs-lead); font-weight: var(--fw-medium); letter-spacing: var(--ls-lead); }
+.service-links__item small { font-size: var(--fs-sm); color: var(--c-ink-2); }
+.service-links__item .icon-arrow { color: var(--c-accent); transition: transform var(--dur-fast) var(--ease); }
+.service-links__item:hover .icon-arrow { transform: translateX(3px); }
+
+/* Artículos: texto provisional, en gris mientras no haya contenido */
+.service-pending { color: var(--c-ink-3); font-style: italic; }

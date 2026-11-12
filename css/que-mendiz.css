@@ -1,0 +1,267 @@
+/* ==========================================================================
+   MENDIZ — ¿Qué Mendiz es para ti? (que-mendiz-es-para-ti.html)
+   Asesor por pasos. Solo lo propio del asesor: el resto sale de los
+   componentes de siempre (.bike-card, .btn, .media, .eyebrow, .heading-editorial,
+   .dealer…). Marcado y lógica en js/que-mendiz.js.
+
+   · Introducción: texto, los tres pasos numerados y «Empezar»; foto al lado.
+   · Barra: Atrás · estado · Empezar de nuevo; progreso a todo el ancho de la
+     ventana y debajo «Tus respuestas».
+   · Pregunta: titular editorial, apoyo y opciones.
+       --photo  foto 3:2 y título debajo, como «Bicis Mendiz» (css/bicis.css).
+                Móvil: miniatura a la izquierda para ver las tres de golpe.
+       --text   ficha con borde fino, icono, título de tarjeta y flecha.
+   · Resultado: .bike-card--wide con los motivos, alternativas en .bike-grid
+     y la banda oscura de distribuidor.
+   ========================================================================== */
+
+.finder { padding-bottom: var(--s-section); }
+/* Introducción y preguntas ocupan al menos la pantalla: el pie no salta entre pasos */
+.finder:is([data-state="intro"], [data-state="question"]) { min-height: calc(100svh - var(--header-h)); }
+
+/* Barra superior ------------------------------------------------------------
+   Atrás · estado · Empezar de nuevo en una fila; debajo, el progreso de lado
+   a lado de la ventana (sale del margen del .container). */
+.finder__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s-4);
+  padding-block: var(--s-3);
+}
+.finder__back { justify-self: start; }
+.finder__restart { justify-self: end; }
+
+.finder__back,
+.finder__restart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--target);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  color: var(--c-ink);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+/* Solo se subraya el texto: el icono de flecha queda limpio */
+:is(.finder__back, .finder__restart) span:not(.material-symbols-outlined) {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--dur-fast) var(--ease);
+}
+.finder__restart { color: var(--c-ink-2); }
+:is(.finder__back, .finder__restart):hover { color: var(--c-ink); }
+:is(.finder__back, .finder__restart):hover span:not(.material-symbols-outlined) { text-decoration-color: currentColor; }
+:is(.finder__back, .finder__restart) .material-symbols-outlined { font-size: 20px; }
+/* Móvil estrecho: «Empezar de nuevo» se queda en icono (el texto sigue para lectores de pantalla) */
+@media (max-width: 479px) {
+  .finder__restart { min-width: var(--target); justify-content: flex-end; }
+  .finder__restart span:not(.material-symbols-outlined) {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+}
+
+.finder__status {
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--c-ink-2);
+}
+.finder__meter {
+  position: relative;
+  height: 6px;
+  margin-inline: calc(var(--margin) * -1);
+  overflow: hidden;
+  background: var(--c-line);
+}
+.finder__meter span {
+  position: absolute;
+  inset: 0;
+  background: var(--c-accent);
+  transform: scaleX(var(--p, 0));
+  transform-origin: 0 50%;
+  transition: transform var(--dur-media) var(--ease);
+}
+
+/* Tus respuestas: cada una vuelve a su pregunta */
+.finder__trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding-top: var(--s-4);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  color: var(--c-ink-3);
+}
+.finder__trail ol { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.finder__trail a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h-sm);
+  padding-inline: var(--s-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-control);
+  color: var(--c-ink);
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.finder__trail a:hover { border-color: var(--c-ink); }
+
+/* Paso --------------------------------------------------------------------- */
+.finder__step { padding-top: var(--s-8); }
+@media (prefers-reduced-motion: no-preference) {
+  .finder__step { animation: rise var(--dur-media) var(--ease) both; }
+}
+.finder__head {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 52rem;
+  margin-bottom: var(--s-7);
+}
+.finder__title:focus,
+.finder__question:focus { outline: none; }
+.finder__help { max-width: var(--w-read); color: var(--c-ink-2); }
+
+/* Opciones ------------------------------------------------------------------ */
+.finder__options { display: grid; gap: var(--gutter); }
+
+/* Con foto */
+.finder__options--photo { gap: var(--s-5) var(--gutter); }
+@media (min-width: 768px) { .finder__options--photo { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-6) var(--gutter); } }
+
+.finder-option {
+  position: relative;
+  display: grid;
+  color: var(--c-ink);
+  text-decoration: none;
+}
+.finder-option:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 4px; border-radius: var(--r-media); }
+
+.finder-option--photo { grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr); gap: var(--s-4); align-items: center; }
+@media (min-width: 768px) { .finder-option--photo { grid-template-columns: none; gap: var(--s-3); align-items: start; } }
+.finder-option__media { aspect-ratio: 3 / 2; }
+@media (max-width: 767px) { .finder-option__media { aspect-ratio: 1 / 1; } }
+.finder-option__media img { transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1); }
+.finder-option__body { display: grid; gap: var(--s-2); align-content: start; }
+.finder-option__head { display: flex; align-items: flex-start; gap: var(--s-3); }
+.finder-option__text { color: var(--c-ink-2); max-width: 40ch; }
+.finder-option__arrow {
+  flex: none;
+  margin-top: 0.15em;
+  font-size: 20px;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.finder-option--photo .finder-option__arrow { opacity: 0; transform: translateX(-4px); }
+.finder-option--photo:is(:hover, :focus-visible) .finder-option__arrow { opacity: 1; transform: none; }
+@media (hover: none) { .finder-option--photo .finder-option__arrow { opacity: 1; transform: none; } }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .finder-option--photo:hover .finder-option__media img { transform: scale(1.03); }
+}
+.finder-option--photo.is-chosen .finder-option__media { outline: 2px solid var(--c-ink); outline-offset: 4px; }
+
+/* Propuesta con fotos: cuatro respuestas en 2 columnas y, en escritorio, en 4.
+   Las respuestas sin foto («No lo tengo claro», «Necesito orientación») llevan
+   su icono en el mismo hueco. */
+@media (min-width: 768px) { .finder__options--photo.finder__options--n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .finder__options--photo.finder__options--n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.finder-option__media--icon { display: grid; place-items: center; background: var(--c-subtle); }
+.finder-option__media--icon .material-symbols-outlined { font-size: 48px; font-variation-settings: "wght" 200; color: var(--c-ink-2); }
+
+/* De texto: 2 columnas (2 y 4 opciones) o 3 (3 opciones) */
+@media (min-width: 768px) { .finder__options--text { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) {
+  .finder__options--text.finder__options--n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .finder__options--text.finder__options--n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.finder-option--text {
+  height: 100%;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-media);
+  background: var(--c-paper);
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+@media (min-width: 768px) { .finder-option--text { gap: var(--s-5); min-height: 13rem; } }
+@media (min-width: 1024px) { .finder-option--text { min-height: 17rem; padding: var(--s-6); } }
+.finder-option--text:hover { border-color: var(--c-ink); background: var(--c-subtle); }
+.finder-option--text.is-chosen { border-color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-ink); }
+.finder-option__icon { font-size: 32px; font-variation-settings: "wght" 300; }
+.finder-option__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.finder-option--text .finder-option__arrow { margin: 0 0 0 auto; font-size: 24px; }
+.finder-option--text:hover .finder-option__arrow { transform: translateX(4px); }
+
+.finder-option__chosen {
+  justify-self: start;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Resultado ------------------------------------------------------------------ */
+.finder__result .finder__head { margin-bottom: var(--s-6); }
+
+.finder__why { margin-top: var(--s-2); }
+.finder__why-title {
+  margin-bottom: var(--s-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-sm);
+}
+.finder__why ul { display: grid; gap: var(--s-2); }
+.finder__why li { display: flex; align-items: flex-start; gap: var(--s-2); max-width: 44ch; }
+.finder__why .material-symbols-outlined { flex: none; margin-top: 0.1em; font-size: 20px; color: var(--c-ink); }
+
+.finder__also { padding-top: var(--s-section); }
+.finder__also-title { margin-bottom: var(--s-6); }
+/* «No lo tengo claro» en asistencia: aviso de que hay una opción del otro tipo */
+.finder__also-note { max-width: 60ch; margin: calc(-1 * var(--s-3)) 0 var(--s-6); color: var(--c-ink-2); }
+/* Una sola alternativa: no se estira a todo el ancho */
+@media (min-width: 768px) { .finder__also-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+.finder__more {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-4) var(--s-6);
+  margin-top: var(--s-8);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--c-line);
+}
+.finder__more .link-arrow { min-height: var(--target); }
+.finder__more .material-symbols-outlined { font-size: 20px; }
+
+/* Introducción --------------------------------------------------------------
+   Móvil: foto arriba y texto debajo. ≥1024: texto en las columnas 1-5 y foto
+   en las 7-12, centrados en vertical. Los pasos usan los números de
+   .mega-menu__facts (01, 02, 03). */
+.finder__start { display: grid; gap: var(--s-7); padding-top: var(--s-6); }
+.finder__start-media { order: -1; aspect-ratio: 4 / 3; }
+.finder__start-text { display: grid; gap: var(--s-5); justify-items: start; align-content: center; }
+.finder__lead { max-width: 40ch; }
+@media (min-width: 1024px) {
+  .finder__start {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: center;
+    padding-top: var(--s-7);
+  }
+  .finder__start-text { grid-column: 1 / span 5; }
+  .finder__start-media { order: 0; grid-column: 7 / -1; }
+}
+
+.finder__start-cta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); }
+.finder__start-cta .material-symbols-outlined { font-size: 20px; }
+.finder__note { font-size: var(--fs-sm); color: var(--c-ink-3); }
+
+/* Sin JavaScript: enlaces a las categorías */
+.finder__fallback { display: grid; gap: var(--s-5); padding-top: var(--s-8); }

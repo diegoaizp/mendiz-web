@@ -1,0 +1,24 @@
+/* ==========================================================================
+   MENDIZ — Fuentes locales
+   Round 8 Four (display). Geist (sans) se carga desde Google Fonts en el <head>.
+   Un solo archivo para los dos pesos: declarado también como 700 para que el
+   navegador no simule una negrita sobre .display (font-weight: 700).
+   ========================================================================== */
+
+@font-face {
+  font-family: "Round 8 Four";
+  src: url("../assets/fonts/round8-four-webfont.woff2") format("woff2"),
+       url("../assets/fonts/round8-four-webfont.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Round 8 Four";
+  src: url("../assets/fonts/round8-four-webfont.woff2") format("woff2"),
+       url("../assets/fonts/round8-four-webfont.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

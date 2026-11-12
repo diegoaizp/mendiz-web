@@ -1,0 +1,160 @@
+/* ==========================================================================
+   MENDIZ — Distribuidores (localizador)
+   Buscador + listado por provincia + mapa. Campos de formulario nuevos
+   (.field) con la misma forma que los botones: cápsula de 48 px.
+   ========================================================================== */
+
+
+/* Barra del buscador ----------------------------------------------------- */
+.locator__bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+}
+/* Móvil: país y buscador a todo el ancho; provincia y «Cerca de mí» en una fila */
+@media (max-width: 767px) {
+  .locator__bar > :nth-child(-n+2) { grid-column: 1 / -1; }
+  .locator__near { padding-inline: var(--s-4); }
+}
+@media (min-width: 768px) {
+  .locator__bar { grid-template-columns: 1fr 1fr; }
+  .locator__bar .field--search { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) {
+  .locator__bar { grid-template-columns: 11rem minmax(0, 1fr) 15rem auto; }
+  .locator__bar .field--search { grid-column: auto; }
+}
+.locator__near .material-symbols-outlined { font-size: 20px; }
+.locator__near[aria-pressed="true"] { background: var(--c-ink); color: var(--c-paper); }
+
+.locator__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-5);
+  padding-block: var(--s-5) var(--s-4);
+  border-bottom: 1px solid var(--c-line);
+}
+.locator__count { font-size: var(--fs-sm); color: var(--c-ink-2); }
+.locator__count strong { font-weight: var(--fw-medium); color: var(--c-ink); }
+.locator__reset { font-size: var(--fs-sm); text-decoration: underline; text-underline-offset: 3px; }
+.locator__reset[hidden] { display: none; }
+.locator__view { margin: 0; }
+@media (min-width: 1024px) { .locator__view { display: none; } }
+
+/* Cuerpo: listado + mapa -------------------------------------------------- */
+.locator__body { display: grid; gap: var(--gutter); }
+@media (min-width: 1024px) {
+  .locator__body { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+  .locator__list { grid-column: 1 / span 6; }
+  .locator__map { grid-column: 7 / -1; }
+}
+
+/* Móvil y tableta: o lista o mapa (pestañas .locator__view) */
+@media (max-width: 1023px) {
+  .locator[data-view="list"] .locator__map { display: none; }
+  .locator[data-view="map"] .locator__list { display: none; }
+}
+
+.locator__map {
+  position: relative;
+  overflow: hidden;
+  height: 70svh;
+  margin-top: var(--s-5);
+  border-radius: var(--r-media);
+  background: var(--c-subtle);
+}
+@media (min-width: 1024px) {
+  .locator__map {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-5));
+    height: calc(100svh - var(--header-h) - var(--s-5) * 2);
+    min-height: 480px;
+  }
+}
+.locator__map .locator-map { position: absolute; inset: 0; }
+
+/* Grupo de provincia */
+.locator-group { padding-top: var(--s-6); }
+.locator-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--ls-lead);
+}
+.locator-group { border-top: 1px solid var(--c-line); padding-top: 0; }
+.locator-group:first-child { border-top: 0; }
+.locator-group__title { padding-bottom: 0; }
+.locator-group__toggle {
+  display: flex; align-items: baseline; gap: var(--s-3); width: 100%;
+  padding-block: var(--s-4); text-align: left; color: inherit; font: inherit; letter-spacing: inherit;
+  cursor: pointer;
+}
+.locator-group__toggle:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.locator-group__chevron { margin-left: auto; align-self: center; font-size: 24px; transition: transform var(--dur) var(--ease); }
+.locator-group.is-open .locator-group__chevron { transform: rotate(180deg); }
+.locator-group.is-open .locator-group__title { padding-bottom: var(--s-2); }
+.locator-group__title small { font-size: var(--fs-sm); font-weight: var(--fw-regular); color: var(--c-ink-3); }
+
+/* Ficha de tienda: fila con línea, sin caja */
+.locator-dealer {
+  display: grid;
+  gap: var(--s-3) var(--s-5);
+  padding-block: var(--s-5);
+  border-top: 1px solid var(--c-line);
+}
+@media (min-width: 768px) {
+  .locator-dealer { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+}
+.locator-dealer__name { font-size: var(--fs-base); font-weight: var(--fw-medium); }
+.locator-dealer__address { font-size: var(--fs-sm); line-height: var(--lh-sm); letter-spacing: var(--ls-sm); color: var(--c-ink-2); }
+.locator-dealer__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-5); }
+.locator-dealer__actions .btn .material-symbols-outlined { font-size: 18px; }
+.locator-dealer__actions .link-arrow { font-size: var(--fs-sm); }
+.locator-dealer__no-phone { font-size: var(--fs-sm); color: var(--c-ink-3); }
+
+/* Sin resultados */
+.locator__empty { display: grid; gap: var(--s-4); justify-items: start; padding-block: var(--s-8); max-width: 44ch; }
+.locator__empty[hidden] { display: none; }
+
+/* Pines del mapa (Leaflet divIcon) ---------------------------------------- */
+.locator-pin {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #1d1d1d;
+  color: #fff;
+  font: 500 13px/1 var(--f-sans);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.leaflet-marker-icon:hover .locator-pin,
+.leaflet-marker-icon:focus-visible .locator-pin,
+.locator-pin.is-hot { transform: scale(1.18); }
+.locator-pin.is-active { background: #fff; color: #1d1d1d; border-color: #1d1d1d; transform: scale(1.18); }
+.locator-pin.is-dim { opacity: 0.35; }
+.locator-me { width: 100%; height: 100%; border: 3px solid #fff; border-radius: 50%; background: #1a73e8; box-shadow: 0 0 0 6px rgb(26 115 232 / 0.2); }
+.locator__map .leaflet-container { font-family: var(--f-sans); background: var(--c-subtle); }
+/* Mapa base en grises: el único color lo ponen los pines */
+.locator__map .leaflet-tile-pane { filter: grayscale(1) contrast(0.85) brightness(1.08); }
+.locator__map .leaflet-control-attribution { font-size: 10px; }
+.locator__map .leaflet-bar a { color: var(--c-ink); }
+
+/* Lo que te da un distribuidor -------------------------------------------- */
+/* Qué hace por ti tu distribuidor: tarjeta con foto + pop-up con descripción. */
+/* Cuatro tarjetas (.topics, base en components.css): 2 × 2 desde 768 px
+   (con tres columnas quedaría una suelta). */
+@media (min-width: 768px) { .topics__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Icono de las FAQ con Material Symbols (sustituye al SVG) */
+.faq__icon.material-symbols-outlined { flex: none; font-size: 24px; }
+
+.dealer__links { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-5); align-items: center; }

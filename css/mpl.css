@@ -1,0 +1,121 @@
+/* ==========================================================================
+   MENDIZ — MPL Concept (mpl.html)
+   Orden: hero · tres claves (con foto) · ventajas · listado · FAQ · pie
+   (con el distribuidor, .dealer-band).
+   Solo lo propio de esta página: el hero de colección y las tres claves.
+   Las ventajas usan el layout de Tecnologías de las fichas (.scroll-story--split,
+   css/product.css); el listado (.bike-card, .category-filter), FAQ y
+   distribuidor reutilizan los componentes del sistema.
+   ========================================================================== */
+
+/* Hero de colección -------------------------------------------------------
+   Foto de estudio clara (niebla) con la bici al centro y suelo oscuro abajo.
+   Móvil y tablet: foto arriba (4:3) y texto debajo sobre fondo casi negro,
+   que continúa el suelo de la foto.
+   ≥1024: la foto ocupa todo el hero y el texto va encima, en oscuro, en las
+   columnas 1-5 y centrado en alto, sobre la niebla (el suelo oscuro queda
+   por debajo). La foto sobresale por la derecha (se recorta) para que la
+   bici quede a la derecha del texto; un velo claro asegura el contraste. */
+.mpl-hero {
+  --mpl-bg: #0b0c0e;
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  background: var(--mpl-bg);
+  color: var(--c-paper);
+}
+.mpl-hero__media { order: -1; }
+.mpl-hero__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 50%;
+  animation: settle 1.2s var(--ease) both;
+}
+.mpl-hero__inner { position: relative; z-index: 1; display: grid; gap: var(--s-6); padding-bottom: var(--s-9); }
+.mpl-hero .breadcrumb { color: var(--c-on-dark-2); }
+.mpl-hero .breadcrumb li + li::before { color: var(--c-on-dark-2); }
+.mpl-hero .breadcrumb a:hover,
+.mpl-hero .breadcrumb [aria-current="page"] { color: var(--c-paper); }
+.mpl-hero__body { display: grid; gap: var(--s-5); justify-items: start; }
+.mpl-hero__title { max-width: 14ch; animation: rise var(--dur-media) 200ms var(--ease) both; }
+.mpl-hero__body > p { max-width: 40ch; color: var(--c-on-dark-2); }
+.mpl-hero__meta { font-size: var(--fs-sm); line-height: var(--lh-sm); letter-spacing: var(--ls-sm); }
+.mpl-hero__meta strong { color: var(--c-paper); font-weight: var(--fw-medium); }
+.mpl-hero .btn-row { margin-top: var(--s-3); }
+
+@media (min-width: 1024px) {
+  .mpl-hero { min-height: clamp(600px, 50vw, 820px); background: #c9d0d5; color: var(--c-ink); }
+  .mpl-hero__media { position: absolute; inset: 0 -20% 0 0; }
+  .mpl-hero__media img { height: 100%; aspect-ratio: auto; }
+  /* Velo claro: aclara la niebla bajo el texto y se abre antes de la bici */
+  .mpl-hero__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgb(238 241 243 / 0.82) 0%, rgb(238 241 243 / 0.55) 22%, rgb(238 241 243 / 0) 38%);
+    pointer-events: none;
+  }
+  .mpl-hero__inner { grid-template-rows: auto 1fr; padding-bottom: var(--s-8); }
+  .mpl-hero__body {
+    align-self: center;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+  .mpl-hero__body > * { grid-column: 1 / span 5; }
+
+  /* Texto y botones en oscuro (la sección sigue siendo .on-dark en móvil) */
+  .mpl-hero .breadcrumb,
+  .mpl-hero .breadcrumb li + li::before { color: var(--c-ink-2); }
+  .mpl-hero .breadcrumb a:hover,
+  .mpl-hero .breadcrumb [aria-current="page"] { color: var(--c-ink); }
+  .mpl-hero__body > p { color: var(--c-ink); }
+  .mpl-hero__meta strong { color: var(--c-ink); }
+  .mpl-hero.on-dark :focus-visible { outline-color: var(--c-focus); }
+  .mpl-hero.on-dark .btn--inverse {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: var(--c-on-accent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .mpl-hero.on-dark .btn--inverse:hover { background: var(--c-accent-hover); border-color: var(--c-accent-hover); }
+  .mpl-hero.on-dark .btn--secondary { border-color: var(--c-ink); color: var(--c-ink); }
+  .mpl-hero.on-dark .btn--secondary:hover { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-paper); }
+}
+/* 1024-1279: el texto ocupa más proporción; la bici va algo más a la derecha */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .mpl-hero__media { inset: 0 -28% 0 0; }
+}
+
+
+/* Tres claves de MPL ------------------------------------------------------
+   Tarjeta con foto y, debajo, filete, titular y
+   nota. Móvil: una por fila, foto 4:3 · desde 768: tres en fila, foto 4:5.
+   La foto se acerca un poco al pasar por encima de la tarjeta. */
+.mpl-keys { display: grid; gap: var(--s-8) var(--gutter); }
+@media (min-width: 768px) { .mpl-keys { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mpl-keys__item { display: grid; gap: var(--s-5); align-content: start; }
+.mpl-keys__media { aspect-ratio: 4 / 3; background: var(--c-ink); }
+@media (min-width: 768px) { .mpl-keys__media { aspect-ratio: 4 / 5; } }
+.mpl-keys__media img { transition: transform var(--dur-media) var(--ease); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mpl-keys__item:hover .mpl-keys__media img { transform: scale(1.04); }
+}
+.mpl-keys__text { display: grid; gap: var(--s-3); }
+.mpl-keys__title { margin-top: var(--s-2); font-size: var(--fs-card); font-weight: var(--fw-medium); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
+.mpl-keys__note { max-width: 36ch; color: var(--c-ink-2); }
+
+/* Ventajas: layout de «Tecnologías» de las fichas (.scroll-story--split,
+   css/product.css). Aquí no hay subnavegación, así que la escena fijada
+   arranca justo bajo la cabecera. */
+#ventajas.scroll-story.is-pinned { --stage-top: var(--header-h); }
+
+/* Listado: el nombre «G11AM MPL» es el más largo; en 2 columnas baja un
+   punto el cuerpo del nombre para que no parta línea. */
+@media (min-width: 768px) {
+  .mpl-grid .bike-card__name { font-size: clamp(3rem, 1.5rem + 3vw, 5rem); }
+}

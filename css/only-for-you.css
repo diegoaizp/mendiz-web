@@ -1,0 +1,158 @@
+/* ==========================================================================
+   MENDIZ — Only For You (only-for-you.html) y su listado
+   de modelos (only-for-you-modelos.html).
+   Estructura: hero · cuatro pasos · frase a sangre (nueve F14 al hacer scroll) · qué puedes elegir (escena
+   fija de las fichas) · vídeo con «Empieza a configurar» → listado.
+   Solo lo propio de estas páginas; las fichas
+   (.bike-card, .bike-grid, .bike-list--clean), el filtro de categorías
+   (.category-filter), .product-hero, .intro, .scroll-story y .page-head son los del sistema.
+   La versión anterior (secuencia de scroll) vive en css/only-for-you-2.css.
+   Comportamiento en js/only-for-you.js.
+   ========================================================================== */
+
+/* Hero ------------------------------------------------------------------
+   El de las fichas (.product-hero, css/product.css). «Only For You» es más largo
+   que un nombre de modelo: en móvil parte en dos líneas. */
+.ofy-hero .product-hero__bg { object-position: 50% 55%; }
+@media (max-width: 767px) {
+  .ofy-hero .product-hero__name { white-space: normal; font-size: clamp(4rem, 22vw, 6rem); }
+}
+
+/* Pausa de los vídeos (cierre «Empieza a configurar»): abajo a la
+   derecha, en cristal (lista de css/base.css). */
+.ofy-film__toggle { position: absolute; right: var(--s-4); bottom: var(--s-4); z-index: 1; padding-inline: var(--s-4) 1.125rem; }
+.ofy-film__toggle .material-symbols-outlined { font-size: 20px; }
+@media (min-width: 768px) { .ofy-film__toggle { right: var(--s-5); bottom: var(--s-5); } }
+
+/* 3. Cuatro pasos -------------------------------------------------------
+   Introducción en dos columnas (.intro) y, debajo, los pasos como las
+   cifras de las fichas (.glance--rule): número en Round 8 Four, filete
+   arriba (negro al pasar el ratón), título y explicación.
+   1 columna · 2 desde 768 · 4 desde 1024. */
+.ofy-intro .heading-section { max-width: 16ch; }
+.ofy-intro .intro__text { gap: var(--s-4); }
+
+.ofy-steps__title { margin: var(--s-9) 0 var(--s-6); }
+.ofy-steps { display: grid; gap: var(--s-7) var(--gutter); }
+@media (min-width: 768px) { .ofy-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .ofy-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ofy-step {
+  display: grid;
+  align-content: start;
+  gap: var(--s-2);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--c-line);
+  transition: border-color var(--dur) var(--ease);
+}
+.ofy-step:hover { border-top-color: var(--c-ink); }
+.ofy-step__num { margin-bottom: var(--s-4); font-size: clamp(3.5rem, 2.5rem + 3.4vw, 6.5rem); }
+.ofy-step > p { max-width: 32ch; }
+.ofy-steps__cta { margin-top: var(--s-8); }
+
+/* 4. Frase a sangre -----------------------------------------------------
+   Una sola foto a sangre (díptico de la F14 blanca en interior) con velo uniforme y una
+   frase centrada. Fondo fijo, sin pase de fotos. */
+.ofy-statement {
+  position: relative;
+  background: var(--c-ink);
+  color: var(--c-paper);
+  text-align: center;
+}
+.ofy-statement__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(480px, 80svh, 860px);
+  overflow: hidden;
+}
+/* z-index 0: el marco hace su propia capa, así el velo (z-index 2) queda
+   dentro de ella y el texto (.ofy-statement__body, z-index 1) por encima */
+.ofy-statement__frame { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+/* Velo sobre la foto */
+.ofy-statement__frame::after { content: ""; position: absolute; inset: 0; z-index: 2; background: rgb(0 0 0 / 0.45); pointer-events: none; }
+.ofy-statement__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+.ofy-statement__body { position: relative; z-index: 1; display: grid; justify-items: center; gap: var(--s-5); padding-block: var(--s-9); }
+.ofy-statement .heading-editorial { max-width: 14ch; }
+.ofy-statement__text {
+  max-width: 36ch;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--ls-lead);
+  color: var(--c-paper);
+  text-wrap: balance;
+}
+
+/* 5. Qué puedes elegir -------------------------------------------------
+   «Tecnologías» de las fichas (.scroll-story--split, css/product.css). Aquí no
+   hay subnavegación: la escena se fija justo bajo la cabecera. Fotos de
+   distintos formatos recortadas al cuadrado del marco. */
+.ofy-scroll-story.is-pinned { --stage-top: var(--header-h); }
+.ofy-scroll-story .scroll-story__media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 6. Empieza a configurar -----------------------------------------------
+   El vídeo del hero a sangre, con velo, titular, texto y botón
+   centrados. Pausa abajo a la derecha (.ofy-film__toggle, arriba). Con
+   movimiento reducido el vídeo se queda en el póster (js/main.js). */
+.ofy-cta {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(520px, 90svh, 900px);
+  overflow: hidden;
+  background: var(--c-ink);
+  color: var(--c-paper);
+  text-align: center;
+}
+.ofy-cta__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ofy-cta::after { content: ""; position: absolute; inset: 0; background: rgb(0 0 0 / 0.45); pointer-events: none; }
+.ofy-cta__body { position: relative; z-index: 1; display: grid; justify-items: center; gap: var(--s-5); padding-block: var(--s-9); }
+.ofy-cta .heading-editorial { max-width: 14ch; }
+.ofy-cta__text {
+  max-width: 36ch;
+  margin-bottom: var(--s-3);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--ls-lead);
+  color: var(--c-on-dark-2);
+  text-wrap: balance;
+}
+.ofy-cta :focus-visible { outline-color: var(--c-paper); }
+
+/* Listado (only-for-you-modelos.html) ----------------------------------
+   Filtro: categoría (texto subrayado, .category-filter) + modelo (desplegable)
+   en una fila; en móvil, el desplegable baja a su línea. */
+.ofy-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4) var(--s-6);
+  margin-bottom: var(--s-6);
+}
+.ofy-filter .category-filter { margin-bottom: 0; min-width: 0; max-width: 100%; }
+.ofy-filter__side { display: flex; align-items: center; gap: var(--s-5); }
+.ofy-filter__count { font-size: var(--fs-sm); color: var(--c-ink-3); white-space: nowrap; }
+@media (max-width: 767px) {
+  .ofy-filter__side { width: 100%; }
+  .ofy-filter__side .field { flex: 1; }
+}
+
+/* Campo desplegable (.field, base en components.css) */
+.field { min-width: 14rem; }
+.field select { padding-right: calc(var(--s-5) + 22px); appearance: none; cursor: pointer; }
+.field .material-symbols-outlined { position: absolute; right: var(--s-4); }
+
+/* Rejilla: 1 · 2 · 3 columnas. En tres columnas el nombre baja un punto
+   para que «X40 SL-ICR» no parta línea. */
+@media (min-width: 1024px) {
+  .ofy-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ofy-grid .bike-card__name { font-size: clamp(3rem, 1rem + 3.4vw, 5rem); }
+}
