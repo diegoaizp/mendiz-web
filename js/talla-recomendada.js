@@ -1,13 +1,11 @@
 /* ==========================================================================
-   MENDIZ — Talla recomendada por altura (pop-up «Geometría y tallas»)
-   Lo usan configurador-f14.html y montaje-f14-mpl.html. Marcado en el
-   <dialog>: [data-height-form] (con un input [data-height-input] en cm), el
+   MENDIZ — Talla recomendada por altura (ficha y modal «Geometría y tallas»)
+   Lo usan f14-sl-slp.html, configurador-f14.html y montaje-f14-mpl.html.
+   Marcado: [data-height-form] (con un input [data-height-input] en cm), el
    botón de elegir [data-height-pick] y la salida [data-height-out].
    Elegir la talla pulsa el [data-size-pick] de esa talla de la tabla, que
-   cada página ya gestiona (tarjetas de talla, resumen, URL…).
-   PROVISIONAL: los rangos son los habituales en carretera y NO son una tabla
-   oficial de Mendiz; validar con la marca (la guía ayuda-como-elegir-tu-talla
-   está pendiente). Cambiar solo RANGES.
+   cada página gestiona (tarjetas de talla, resumen, URL…).
+   Rangos orientativos de altura por talla en bicicletas de carretera (RANGES).
    ========================================================================== */
 (() => {
   const form = document.querySelector('[data-height-form]');

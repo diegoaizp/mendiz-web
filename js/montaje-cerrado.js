@@ -3,7 +3,7 @@
    Misma maqueta que el configurador (css/configurador-bici.css). El montaje
    es cerrado (grupo, ruedas y componentes los define Mendiz) y solo se eligen
    el color (uno de los tres MPL) y la talla, con las mismas tarjetas que el
-   configurador. Datos: window.MENDIZ_MONTAJE_CERRADO (js/f14-mpl-montajes.js).
+   configurador. Datos: window.MENDIZ_MONTAJE_CERRADO (js/data/f14-mpl-montajes.js).
    La URL lleva el montaje y lo elegido (?montaje=F14S.01C&color=negro&talla=M)
    y se actualiza al cambiar; sin parámetros: montaje por defecto, verde y sin
    talla. También: barra fija con precio y CTA, y la geometría en <dialog>
@@ -190,11 +190,10 @@
     document.querySelectorAll('[data-configurator-modal-open]').forEach((el) => el.addEventListener('click', (e) => {
       e.preventDefault();
       modal.showModal();
-      if (typeof lenis !== 'undefined') lenis?.stop(); // de js/main.js
+      window.MENDIZ?.lenis?.stop();
       modal.querySelector('.configurator-modal__body').scrollTop = 0;
     }));
     modal.querySelector('[data-configurator-modal-close]')?.addEventListener('click', () => modal.close());
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
-    modal.addEventListener('close', () => { if (typeof lenis !== 'undefined') lenis?.start(); });
+    modal.addEventListener('close', () => { window.MENDIZ?.lenis?.start(); });
   }
 })();

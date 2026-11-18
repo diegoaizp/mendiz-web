@@ -1,22 +1,20 @@
 // MENDIZ — Only For You (only-for-you.html) y su listado
 // (only-for-you-modelos.html)
-// 1. Vídeos: el botón de pausa / reproducción ([data-ofy-film]) está en
-//    js/main.js, porque la home lo usa también.
-// 2. Filtro del listado (only-for-you-modelos.html): categoría + modelo, guardados en ?categoria= y
-//    ?modelo= para poder enlazarlos (p. ej. desde las páginas de categoría).
-// La versión anterior (secuencia de scroll) está en js/only-for-you-2.js.
+// · Vídeos: el botón de pausa / reproducción ([data-ofy-film]) está en
+//   js/main.js, porque la home lo usa también.
+// · Filtro del listado (only-for-you-modelos.html): categoría + modelo, guardados
+//   en ?categoria= y ?modelo= para poder enlazarlos.
 
-// 2. Filtro categoría + modelo ---------------------------------------------------
 (() => {
   const list = document.querySelector('[data-ofy-grid]');
   const select = document.querySelector('[data-ofy-model]');
   if (!list || !select) return;
 
   const cards = [...list.querySelectorAll('.bike-card')];
-  const catButtons = [...document.querySelectorAll('[data-ofy-cat]')];
+  const catButtons = [...document.querySelectorAll('[data-ofy-category]')];
   const count = document.querySelector('[data-ofy-results]');
-  const models = cards.map((card) => ({ id: card.dataset.model, name: card.dataset.name, cat: card.dataset.cat }));
-  const cats = new Set(catButtons.map((b) => b.dataset.ofyCat));
+  const models = cards.map((card) => ({ id: card.dataset.model, name: card.dataset.name, cat: card.dataset.category }));
+  const cats = new Set(catButtons.map((b) => b.dataset.ofyCategory));
 
   const state = { cat: 'todas', model: '' };
 
@@ -29,11 +27,11 @@
   }
 
   function apply() {
-    catButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ofyCat === state.cat)));
+    catButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ofyCategory === state.cat)));
 
     let visible = 0;
     cards.forEach((card) => {
-      const show = (state.cat === 'todas' || card.dataset.cat === state.cat)
+      const show = (state.cat === 'todas' || card.dataset.category === state.cat)
         && (!state.model || card.dataset.model === state.model);
       card.hidden = !show;
       if (show) visible++;
@@ -49,7 +47,7 @@
   }
 
   catButtons.forEach((btn) => btn.addEventListener('click', () => {
-    state.cat = btn.dataset.ofyCat;
+    state.cat = btn.dataset.ofyCategory;
     // Si el modelo elegido no es de esta categoría, se quita.
     if (state.model && !models.some((m) => m.id === state.model && (state.cat === 'todas' || m.cat === state.cat))) {
       state.model = '';

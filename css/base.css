@@ -40,6 +40,11 @@ a { color: inherit; text-decoration: none; }
 button, input { font: inherit; letter-spacing: inherit; color: inherit; }
 button { background: none; border: 0; padding: 0; cursor: pointer; }
 
+/* Contención de scroll en modales <dialog>: evita desplazar el fondo sin
+   alterar overflow en html/body ni provocar saltos por la barra de scroll. */
+dialog:modal { overscroll-behavior: contain; }
+dialog::backdrop { overflow: hidden; overscroll-behavior: contain; }
+
 /* Las anclas internas no quedan bajo la cabecera ni la subnavegación */
 [id] { scroll-margin-top: calc(var(--header-h) + var(--subnav-h) + var(--s-4)); }
 
@@ -170,14 +175,14 @@ main { overflow-x: clip; }
 
 /* Blanco sobre imagen o vídeo: cristal translúcido.
    Se aplica solo por contexto; en fondos negros lisos sigue siendo blanco. */
-:is(.cover-hero, .product-hero, .mpl-hero, .dealer-band, .choice__item, .mega-menu__teaser-card, .ofy-sequence, .ofy-cta, .home-ofy, .ofy-banner--feature, .in-use) .btn--inverse {
+:is(.cover-hero, .product-hero, .mpl-hero, .dealer-band, .choice__item, .mega-menu__teaser-card, .ofy-cta, .home-ofy, .ofy-banner--feature, .in-use) .btn--inverse {
   background: rgb(255 255 255 / 0.2);
   border-color: transparent;
   color: #fff;
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
 }
-:is(.cover-hero, .product-hero, .mpl-hero, .dealer-band, .choice__item, .mega-menu__teaser-card, .ofy-sequence, .ofy-cta, .home-ofy, .ofy-banner--feature, .in-use) .btn--inverse:hover,
+:is(.cover-hero, .product-hero, .mpl-hero, .dealer-band, .choice__item, .mega-menu__teaser-card, .ofy-cta, .home-ofy, .ofy-banner--feature, .in-use) .btn--inverse:hover,
 .mega-menu__teaser-card:hover .btn--inverse {
   background: rgb(255 255 255 / 0.28);
   border-color: transparent;

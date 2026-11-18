@@ -1053,6 +1053,7 @@ html.is-header-hidden .subnav { top: 0; }
 }
 .ofy-banner__media { order: 1; }
 .ofy-banner__media video { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: 52% 50%; }
+.ofy-banner__media img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
 .ofy-banner__content { padding-block: var(--s-8) var(--s-4); }
 .ofy-banner__body { display: grid; gap: var(--s-5); max-width: 26rem; }
 .ofy-banner__body .btn { justify-self: start; }
@@ -1193,6 +1194,12 @@ html.is-header-hidden .subnav { top: 0; }
 .choice--centered .choice__body { justify-items: center; }
 .choice--centered .choice__item--dark { align-content: center; }
 .choice--centered .choice__item--dark .choice__media::after { background: rgb(0 0 0 / 0.45); }
+/* Una sola tarjeta (fichas solo Only For You, sin edición MPL): a todo el
+   ancho y apaisada en escritorio */
+@media (min-width: 1024px) {
+  .choice--single { grid-template-columns: minmax(0, 1fr); }
+  .choice--single .choice__item { aspect-ratio: 21 / 9; }
+}
 /* Fondo de las fichas claras con la bici MPL */
 .choice--centered .choice__item:not(.choice__item--dark) { background: linear-gradient(to bottom, #d9dce3, #eaeef6); }
 /* Recorte transparente: ocupa la parte de arriba de la ficha (el texto va

@@ -1,21 +1,17 @@
 """Genera el esquema de geometría de la F14 SL-SLP (talla M) a escala 1 unidad = 1 mm y lo
-escribe en la ficha. Datos: configurador oficial bicismendiz.com.
+escribe en la ficha.
 
-Estilo de plano técnico (referencia del cliente): cuadro en línea negra, cotas en
-verde con flecha en cada extremo, líneas auxiliares en gris y letras pequeñas sin círculo.
+Estilo de plano técnico: cuadro en línea negra, cotas en verde con flecha en
+cada extremo, líneas auxiliares en gris y letras pequeñas sin círculo.
 
-Cuadro: contorno vectorizado de la capa de color del cuadro del configurador (Only For You),
-https://www.bicismendiz.com/sites/default/files/f14sl-c01-negro.png, guardada en
-tools/fuentes/. Es solo cuadro + horquilla, con fondo transparente; su alfa es la silueta.
-Calibración de esa capa (2500 x 1667 px), con tres puntos del propio dibujo del configurador:
+Cuadro: contorno vectorizado de la capa de color del cuadro en tools/fuentes/
+(cuadro + horquilla sobre fondo transparente; el canal alfa define la silueta).
+Calibración del lienzo (2500 × 1667 px) con tres puntos de referencia:
 - eje trasero = centro del agujero de la puntera (689,9, 1036,8 px);
-- pedalier = centro del plato y de la araña de la capa f14sl-componentes.png (1169, 1110,5 px);
-- eje delantero = centro del disco de freno de esa misma capa (1847,5, 1023,5 px); la puntera de
-  la horquilla no tiene agujero en el dibujo.
-Ajuste de semejanza por mínimos cuadrados de esos tres puntos a la geometría de la talla M
-(1,171 px/mm); el dibujo se aparta como mucho ~3 mm de las cotas teóricas. Los círculos de
-ejes y pedalier se dibujan en los centros del dibujo, para que caigan bien dentro del cuadro
-(el delantero, en el eje de la pata de la horquilla).
+- pedalier = centro del plato y de la araña de la capa de componentes (1169, 1110,5 px);
+- eje delantero = centro del disco de freno de esa misma capa (1847,5, 1023,5 px).
+Ajuste de semejanza por mínimos cuadrados (Umeyama) de esos tres puntos a la geometría
+de la talla M (1,171 px/mm); desvío máximo ~3 mm respecto a las cotas teóricas.
 
 Uso: python3 tools/geometria-svg.py f14-sl-slp.html [tools/fuentes/f14sl-c01-negro.png]
 Requiere numpy y opencv-python."""
@@ -169,8 +165,8 @@ def circle(c, r): return f"M{c[0]-r:.1f} {c[1]:.1f} a{r} {r} 0 1 0 {2*r} 0 a{r} 
 circles = ' '.join([circle(centers[0], 10), circle(centers[1], 22), circle(centers[2], 10)])   # ejes pasantes y caja de pedalier
 refs = (f'<path class="geometry__axis" d="{line((-450, 0), (sx + OV, 0))} {line((rear[0] - 40, DROP), (front[0] + 60, DROP))}"/>'
         f'<path class="geometry__axle" d="{circles}"/>')
-out = [f'<svg class="geometry__svg" viewBox="0 0 {W} {H}" role="img" aria-labelledby="geo-svg-title">',
-       '            <title id="geo-svg-title">Cuadro F14 SL-SLP en talla M, de perfil, con las medidas de la tabla señaladas</title>',
+out = [f'<svg class="geometry__svg" viewBox="0 0 {W} {H}" role="img" aria-labelledby="geometry-svg-title">',
+       '            <title id="geometry-svg-title">Cuadro F14 SL-SLP en talla M, de perfil, con las medidas de la tabla señaladas</title>',
        '            ' + refs,
        '            ' + frame_path]
 out += ['            ' + g for g in m]

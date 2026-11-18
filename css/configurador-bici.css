@@ -280,7 +280,7 @@
 .configurator-color:hover .configurator-color__dot { transform: scale(0.92); }
 .configurator-color:has(input:checked)::after { border-color: var(--c-ink); }
 .configurator-color:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: 1px; }
-/* Personalizador: muestras de 40 px en cuadrícula, como las de 60 px del oficial */
+/* Personalizador: muestras de 40 px en cuadrícula */
 .configurator-colors--lg { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: var(--s-1); }
 .configurator-color--lg { width: 52px; height: 52px; justify-self: center; }
 .configurator-color--lg .configurator-color__dot { width: 40px; height: 40px; }
@@ -441,7 +441,6 @@
 @media (max-width: 767px) {
   .configurator-modal { width: 100vw; height: 100svh; border-radius: 0; }
 }
-html:has(.configurator-modal[open]) { overflow: hidden; }
 
 .configurator-modal__head {
   display: grid;
@@ -529,7 +528,6 @@ html:has(.configurator-modal[open]) { overflow: hidden; }
 }
 .configurator-customizer[open] { display: flex; flex-direction: column; }
 .configurator-customizer::backdrop { background: transparent; }
-html:has(.configurator-customizer[open]) { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) {
   .configurator-customizer[open] { animation: configurator-customizer-in 480ms cubic-bezier(0.16, 1, 0.3, 1); }
   .configurator-customizer.is-closing { animation: configurator-customizer-out 280ms cubic-bezier(0.7, 0, 0.84, 0) forwards; }

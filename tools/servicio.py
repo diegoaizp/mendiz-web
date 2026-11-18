@@ -10,15 +10,10 @@ Genera a partir de ARTICULOS (abajo):
   · ayuda-<slug>.html      un artículo por tarjeta, con la plantilla de noticia
                            del blog (css/blog.css, js/blog.js) y JSON-LD Article.
 
-ESTRUCTURA INICIAL: los textos de los artículos son un guion de apartados
-pendiente de redactar y revisar con Mendiz. Para cambiar títulos, fotos o
-apartados, edita ARTICULOS y ejecuta desde la carpeta del proyecto:
+Para cambiar títulos, fotos o apartados, edita ARTICULOS y ejecuta desde la carpeta del proyecto:
 
     python3 tools/servicio.py
     python3 tools/header.py      # header y página actual en las páginas nuevas
-
-Texto: no decir que las bicis se fabrican en Vitoria ni que Mendiz diseña toda
-la gama (ver bloque «Cada Mendiz es única»).
 """
 from html import escape
 from pathlib import Path
@@ -118,9 +113,9 @@ ARTICULOS = [
 ]
 
 ARROW = ('<svg aria-hidden="true" class="icon-arrow" fill="none" stroke="currentColor" stroke-width="1.4" '
-         'viewbox="0 0 12 12"><path d="M1 6h10M7 2l4 4-4 4"></path></svg>')
+         'viewBox="0 0 12 12"><path d="M1 6h10M7 2l4 4-4 4"></path></svg>')
 ARROW_BACK = ('<svg aria-hidden="true" class="icon-arrow icon-arrow--back" fill="none" stroke="currentColor" '
-              'stroke-width="1.4" viewbox="0 0 12 12"><path d="M11 6H1M5 2 1 6l4 4"></path></svg>')
+              'stroke-width="1.4" viewBox="0 0 12 12"><path d="M11 6H1M5 2 1 6l4 4"></path></svg>')
 
 
 def size(src):
@@ -141,10 +136,10 @@ def parts(path):
 
 def page(base, title, desc, css, main, ld=None):
     head, header, footer = parts(base)
-    head = re.sub(r'<link href="css/catalogo-producto\.css" rel="stylesheet"/>', '', head)
+    head = re.sub(r'<link\b[^>]*href="css/catalogo-producto\.css"[^>]*>\n?', '', head)
     head = re.sub(r'<title>.*?</title>', f'<title>{escape(title)}</title>', head)
-    head = re.sub(r'<meta content="[^"]*" name="description"/>', f'<meta content="{escape(desc)}" name="description"/>', head)
-    links = ''.join(f'\n<link href="css/{c}" rel="stylesheet"/>' for c in css)
+    head = re.sub(r'<meta\b[^>]*\bname="description"[^>]*>', f'<meta content="{escape(desc)}" name="description">', head)
+    links = ''.join(f'\n<link href="css/{c}" rel="stylesheet">' for c in css)
     script = (f'\n<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False, separators=(",", ":"))}</script>'
               if ld else '')
     return f'''{head}{links}{script}
@@ -161,7 +156,7 @@ def page(base, title, desc, css, main, ld=None):
 def card(a, heading='h3'):
     return f'''<li class="topics__item">
 <a class="topics__link" href="ayuda-{a['slug']}.html">
-<figure class="media topics__media"><img alt="{escape(a['alt'])}" loading="lazy" src="{a['img']}"{size(a['img'])}/></figure>
+<figure class="media topics__media"><img alt="{escape(a['alt'])}" decoding="async" loading="lazy" src="{a['img']}"{size(a['img'])}></figure>
 <span class="topics__head"><span class="heading-card topics__title">{escape(a['title'])}</span><span aria-hidden="true" class="topics__arrow material-symbols-outlined">arrow_forward</span></span>
 <span class="topics__note">{escape(a['lead'])}</span>
 </a>
@@ -178,10 +173,9 @@ def servicio():
 <p class="muted">Guías para elegir, ajustar y cuidar tu Mendiz, y todo lo que necesitas después de la compra. Tu distribuidor te acompaña en cada paso.</p>
 </header>
 <!-- ===================================================== GUÍAS DE AYUDA
-         Tarjetas del estilo «Cada Mendiz es única» de la ficha F14 (.topics):
-         foto 3:2, título y flecha al pasar el ratón; cada una enlaza a su
-         artículo (ayuda-*.html, formato blog). Estructura inicial: contenidos pendientes de revisión. -->
-<section aria-labelledby="guias-title" class="section section--flush-top topics" id="guias">
+         Tarjetas (.topics): foto 3:2, título y flecha al pasar el ratón;
+         cada una enlaza a su artículo (ayuda-*.html). -->
+<section class="section section--flush-top topics" id="guias">
 <div class="container">
 <h2 class="heading-section topics__heading" id="guias-title">Guías de ayuda</h2>
 <ul class="topics__grid">
@@ -190,7 +184,7 @@ def servicio():
 </div>
 </section>
 <!-- ===================================================== TU MENDIZ / CONTACTO -->
-<section aria-labelledby="tu-mendiz-title" class="section section--flush-top" id="tu-mendiz">
+<section class="section section--flush-top" id="tu-mendiz">
 <div class="container service-after">
 <h2 class="heading-section" id="tu-mendiz-title">Después de la compra</h2>
 <ul class="service-links">
@@ -198,13 +192,12 @@ def servicio():
 <li><a class="service-links__item" href="ayuda-mantenimiento.html"><span><strong>Mantenimiento y manual</strong><small>Ajustes, uso y cuidado de tu bici</small></span>{ARROW}</a></li>
 <li id="preguntas"><a class="service-links__item" href="que-mendiz-es-para-ti.html"><span><strong>¿Qué Mendiz es para ti?</strong><small>Te orientamos según cómo y por dónde ruedas</small></span>{ARROW}</a></li>
 <li><a class="service-links__item" href="distribuidores.html"><span><strong>Distribuidores</strong><small>Prueba tu talla y tramita tu pedido cerca de ti</small></span>{ARROW}</a></li>
-<!-- TODO: Contacto y Preguntas frecuentes, pendientes de página -->
 </ul>
 </div>
 </section>
 <!-- ===================================================== DISTRIBUIDOR -->
-<section aria-labelledby="dealer-title" class="dealer-band" id="distribuidor">
-<img alt="Dos ciclistas rodando juntos por una carretera de montaña con bicicletas Mendiz" class="dealer-band__img" height="1600" loading="lazy" src="assets/img/f14-sl-slp/f14_y_f12_paseo_de_amigos2_1.webp" width="2400"/>
+<section class="dealer-band" id="distribuidor">
+<img alt="Dos ciclistas rodando juntos por una carretera de montaña con bicicletas Mendiz" class="dealer-band__img" decoding="async" height="1600" loading="lazy" src="assets/img/f14-sl-slp/f14_y_f12_paseo_de_amigos2_1.webp" width="2400">
 <div class="container dealer-band__body">
 <h2 class="heading-section dealer-band__title" id="dealer-title">Encuentra tu distribuidor</h2>
 <a class="btn btn--inverse btn--lg" href="distribuidores.html">Buscar distribuidor</a>
@@ -225,18 +218,18 @@ def article(a):
             body.append(f'<p class="service-pending">{PENDING}</p>')
     if a['cta']:
         text, label, href = a['cta']
-        body.append(f'<p class="article-note">{escape(text)}: <a href="{href}">{escape(label)}</a>.</p>')
+        end = '' if label.endswith(('?', '!', '.')) else '.'
+        body.append(f'<p class="article-note">{escape(text)}: <a href="{href}">{escape(label)}</a>{end}</p>')
     others = [o for o in ARTICULOS if o is not a][:3]
     related = '\n'.join(f'''<article class="post-card">
-<div class="post-card__media"><img alt="" loading="lazy" src="{o['img']}"{size(o['img'])}/></div>
+<div class="post-card__media"><img alt="" decoding="async" loading="lazy" src="{o['img']}"{size(o['img'])}></div>
 <p class="post-meta"><span class="post-meta__category">{escape(o['topic'])}</span><span>Ayuda</span></p>
 <h3 class="post-card__title"><a href="ayuda-{o['slug']}.html">{escape(o['title'])}</a></h3>
 <p class="post-card__excerpt">{escape(o['lead'])}</p>
 </article>''' for o in others)
     d_iso, d_short, d_long = UPDATED
     main = f'''<!-- ===================================================== ARTÍCULO DE AYUDA
-         Plantilla de noticia del blog (css/blog.css; compartir en js/blog.js).
-         Guion de apartados: TODO redactar y revisar con Mendiz (SEO). -->
+         Plantilla de artículo (css/blog.css; compartir en js/blog.js). -->
 <article class="article" aria-labelledby="article-title">
 <nav aria-label="Migas de pan" class="container breadcrumb">
 <ol><li><a href="index.html">Inicio</a></li><li><a href="servicio.html">Servicio</a></li><li><span aria-current="page">{escape(a['title'])}</span></li></ol>
@@ -247,7 +240,7 @@ def article(a):
 <p class="article-head__lead">{escape(a['lead'])}</p>
 </header>
 <figure class="container article-hero">
-<div class="article-hero__media"><img alt="{escape(a['alt'])}" fetchpriority="high" src="{a['img']}"{size(a['img'])}/></div>
+<div class="article-hero__media"><img alt="{escape(a['alt'])}" fetchpriority="high" src="{a['img']}"{size(a['img'])}></div>
 </figure>
 <div class="container article-layout">
 <aside aria-label="Sobre este artículo" class="article-aside">
@@ -255,9 +248,9 @@ def article(a):
 <div><dt>Actualizado</dt><dd><time datetime="{d_iso}">{d_long}</time></dd></div>
 <div><dt>Tema</dt><dd>{escape(a['topic'])}</dd></div>
 </dl>
-<div class="article-share" data-share="">
-<button class="article-share__btn" data-share-copy="" type="button"><span aria-hidden="true" class="material-symbols-outlined">link</span><span data-share-label="">Copiar enlace</span></button>
-<button class="article-share__btn" data-share-native="" hidden="" type="button"><span aria-hidden="true" class="material-symbols-outlined">ios_share</span><span>Compartir</span></button>
+<div class="article-share" data-share>
+<button class="article-share__btn" data-share-copy type="button"><span aria-hidden="true" class="material-symbols-outlined">link</span><span data-share-label>Copiar enlace</span></button>
+<button class="article-share__btn" data-share-native hidden type="button"><span aria-hidden="true" class="material-symbols-outlined">ios_share</span><span>Compartir</span></button>
 </div>
 </aside>
 <div class="article-body">
@@ -269,7 +262,7 @@ def article(a):
 </div>
 </article>
 <!-- ===================================================== OTROS ARTÍCULOS -->
-<section aria-labelledby="related-title" class="container article-related">
+<section class="container article-related">
 <div class="section-head">
 <div class="section-head__text"><h2 class="heading-section" id="related-title">Otros artículos de ayuda</h2></div>
 <a class="link-arrow" href="servicio.html">Ver todas las guías {ARROW}</a>

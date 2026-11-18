@@ -44,14 +44,12 @@ PAGES = sorted(ROOT.glob('*.html'))
 # Si una página no está en el menú, se marca como actual la que la representa
 ALIAS = {
     'configurador-f14.html': 'only-for-you.html',
-    'only-for-you-2.html': 'only-for-you.html',
     'only-for-you-configura.html': 'only-for-you.html',
     'montaje-f14-mpl.html': 'mpl.html',
 }
 
 ICONS = ['arrow_back', 'arrow_forward', 'chevron_right', 'close', 'east', 'menu', 'person', 'west']
 
-OUTLET = 'https://www.bicismendiz.com/bicicletas/temporada-anterior'
 WEB = 'https://www.bicismendiz.com/bicicletas'
 
 # --------------------------------------------------------------------------
@@ -76,7 +74,7 @@ MENU = [
         # por él. Mientras no hay ninguno desplegado se ve esta imagen.
         'collapsed': True,
         'teaser': {'href': 'f14-sl-slp.html', 'img': 'assets/img/compartido/bicis-menu.webp',
-                   'eyebrow': 'F14 SL-SLP', 'title': 'Diseñadas en casa. Montadas una a una.', 'cta': 'Conócela'},
+                   'eyebrow': 'F14 SL-SLP', 'title': 'Diseñada en Vitoria. Montada una a una.', 'cta': 'Conócela'},
         # kind 'types': categoría → tipo → modelos. Los tipos son los filtros del
         # listado de cada categoría (?tipo=…), así el enlace abre el listado filtrado.
         'groups': [
@@ -87,9 +85,9 @@ MENU = [
                 'types': [('rendimiento', 'Rendimiento'), ('aero', 'Aero'), ('gran-fondo', 'Gran fondo'), ('triatlon', 'Triatlón')],
                 'items': [
                     model('F14 SL-SLP', 'Desde 3.490 €', 'f14-sl-slp.html', 'assets/img/f14-sl-slp/f14-sl-slp-hero-1200.webp', 'rendimiento'),
-                    model('F12 SL', 'Desde 3.390 €', '#', 'assets/img/f12-sl/f12-sl-hero-1200.webp', 'aero'),
-                    model('F9 SL', 'Desde 2.640 €', '#', 'assets/img/f9-sl/f9-sl-hero-1200.webp', 'gran-fondo'),
-                    model('TT10', 'Desde 7.100 €', '#', 'assets/img/tt10/tt10-hero-1200.webp', 'triatlon'),
+                    model('F12 SL', 'Desde 3.390 €', 'f12-sl.html', 'assets/img/f12-sl/f12-sl-hero-1200.webp', 'aero'),
+                    model('F9 SL', 'Desde 2.640 €', 'f9-sl.html', 'assets/img/f9-sl/f9-sl-hero-1200.webp', 'gran-fondo'),
+                    model('TT10', 'Desde 7.100 €', 'tt10.html', 'assets/img/tt10/tt10-hero-1200.webp', 'triatlon'),
                 ],
                 'teaser': {'img': 'assets/img/compartido/terrenos/carretera.webp', 'eyebrow': 'Bicicletas de carretera',
                            'title': 'Cuatro modelos para entrenar, viajar y competir', 'cta': 'Ver carretera'},
@@ -101,8 +99,8 @@ MENU = [
                 'types': [('carbono', 'Carbono'), ('aluminio', 'Aluminio')],
                 'items': [
                     model('G12 SL', 'Desde 2.150 €', 'g12-sl.html', 'assets/img/g12-sl/g12-sl-hero-1200.webp', 'carbono'),
-                    model('G11AM', 'Desde 2.250 €', f'{WEB}/carretera/mendiz-g11am', 'assets/img/g11am/g11am-hero-1200.webp', 'carbono'),
-                    model('G4.ICR', 'Desde 1.390 €', f'{WEB}/carretera/mendiz-g4icr', 'assets/img/g4-icr/g4-icr-hero-1200.webp', 'aluminio'),
+                    model('G11AM', 'Desde 2.250 €', 'g11am.html', 'assets/img/g11am/g11am-hero-1200.webp', 'carbono'),
+                    model('G4.ICR', 'Desde 1.390 €', 'g4-icr.html', 'assets/img/g4-icr/g4-icr-hero-1200.webp', 'aluminio'),
                 ],
                 'teaser': {'img': 'assets/img/compartido/terrenos/gravel.webp', 'eyebrow': 'Bicicletas de gravel',
                            'title': 'Para competir, enlazar pistas y asfalto o viajar con equipaje', 'cta': 'Ver gravel'},
@@ -114,9 +112,9 @@ MENU = [
                 'types': [('carbono-doble', 'Carbono doble'), ('carbono-rigido', 'Carbono rígido'), ('aluminio-rigido', 'Aluminio rígido')],
                 'items': [
                     model('X40 SL-ICR', 'Desde 1.840 €', 'x40-sl-icr.html', 'assets/img/x40-sl-icr/x40-sl-icr-hero-1200.webp', 'carbono-doble'),
-                    model('X21 SL', 'Desde 1.490 €', f'{WEB}/mtb/mendiz-x21-sl-0', 'assets/img/x21-sl/x21-sl-hero-1200.webp', 'carbono-rigido'),
-                    model('X10 BOOST', 'Desde 990 €', f'{WEB}/mtb/mendiz-x10-boost', 'assets/img/x10-boost/x10-boost-hero-1200.webp', 'aluminio-rigido'),
-                    model('X10', 'Desde 850 €', f'{WEB}/mtb/mendiz-x10-0', 'assets/img/x10/x10-hero-1200.webp', 'aluminio-rigido'),
+                    model('X21 SL', 'Desde 1.490 €', 'x21-sl.html', 'assets/img/x21-sl/x21-sl-hero-1200.webp', 'carbono-rigido'),
+                    model('X10 BOOST', 'Desde 990 €', 'x10-boost.html', 'assets/img/x10-boost/x10-boost-hero-1200.webp', 'aluminio-rigido'),
+                    model('X10', 'Desde 850 €', 'x10.html', 'assets/img/x10/x10-hero-1200.webp', 'aluminio-rigido'),
                 ],
                 'teaser': {'img': 'assets/img/compartido/terrenos/montana.webp', 'eyebrow': 'Bicicletas de montaña',
                            'title': 'Doble suspensión o rígida, carbono o aluminio', 'cta': 'Ver montaña'},
@@ -128,10 +126,10 @@ MENU = [
                 'types': [('carretera', 'Carretera'), ('montana', 'Montaña'), ('gravel', 'Gravel')],
                 'items': [
                     model('EX41', 'Desde 3.650 €', 'ex41.html', 'assets/img/ex41/ex41-hero-1200.webp', 'montana'),
-                    model('EF21', 'Desde 5.290 €', f'{WEB}/electricas/mendiz-ef21', 'assets/img/ef21/ef21-hero-1200.webp', 'carretera'),
-                    model('EF4', 'Desde 4.290 €', f'{WEB}/electricas/mendiz-ef4', 'assets/img/ef4/ef4-hero-1200.webp', 'carretera'),
-                    model('EG21', 'Desde 5.390 €', f'{WEB}/electricas/mendiz-eg21', 'assets/img/eg21/eg21-hero-1200.webp', 'gravel'),
-                    model('EG4', 'Desde 4.290 €', f'{WEB}/electricas/mendiz-eg4', 'assets/img/eg4/eg4-hero-1200.webp', 'gravel'),
+                    model('EF21', 'Desde 5.290 €', 'ef21.html', 'assets/img/ef21/ef21-hero-1200.webp', 'carretera'),
+                    model('EF4', 'Desde 4.290 €', 'ef4.html', 'assets/img/ef4/ef4-hero-1200.webp', 'carretera'),
+                    model('EG21', 'Desde 5.390 €', 'eg21.html', 'assets/img/eg21/eg21-hero-1200.webp', 'gravel'),
+                    model('EG4', 'Desde 4.290 €', 'eg4.html', 'assets/img/eg4/eg4-hero-1200.webp', 'gravel'),
                 ],
                 'teaser': {'img': 'assets/img/compartido/terrenos/electricas.webp', 'eyebrow': 'Bicicletas eléctricas',
                            'title': 'Asistencia al pedaleo para carretera, gravel y montaña', 'cta': 'Ver eléctricas'},
@@ -210,7 +208,7 @@ MENU = [
                 'id': 'carretera', 'label': 'Carretera MPL', 'href': 'mpl.html#modelos', 'kind': 'models',
                 'all': 'Ver todas las bicis MPL',
                 'items': [
-                    model('F14 MPL', 'Desde 2.150 €', f'{WEB}/carretera/mendiz-f14-mpl', 'assets/img/mpl/f14-mpl-1200.webp'),
+                    model('F14 MPL', 'Desde 2.150 €', 'montaje-f14-mpl.html', 'assets/img/mpl/f14-mpl-1200.webp'),
                     model('F9 MPL', 'Desde 2.050 €', f'{WEB}/carretera/mendiz-f9-mpl', 'assets/img/mpl/f9-mpl-1200.webp'),
                 ],
                 'teaser': {'img': 'assets/img/compartido/categorias/carretera-mpl.webp', 'eyebrow': 'Carretera MPL',
@@ -385,7 +383,7 @@ def teaser(p, g, cls=''):
     return f'''
                       <div class="mega-menu__teaser{cls}" data-mega-menu-teaser>
                         <a class="mega-menu__teaser-card on-dark" href="{escape(p.url(g['href']))}" tabindex="-1">
-                          <img src="{p.url(t['img'])}"{size(t['img'])} alt="" loading="lazy" decoding="async">
+                          <img src="{p.url(t['img'])}"{size(t['img'])} alt="" loading="lazy" decoding="async" fetchpriority="low">
                           <span class="mega-menu__teaser-text">
                             <span class="eyebrow">{escape(t['eyebrow'])}</span>
                             <span class="mega-menu__teaser-title">{escape(t['title'])}</span>
@@ -482,7 +480,7 @@ def section(p, s):
         for name, img, href in s['tiles']:
             tiles.append(f'''
                     <li><a class="mega-menu__tile on-dark" href="{escape(p.url(href))}">
-                      <img src="{p.url(img)}"{size(img)} alt="" loading="lazy" decoding="async">
+                      <img src="{p.url(img)}"{size(img)} alt="" loading="lazy" decoding="async" fetchpriority="low">
                       <span class="mega-menu__tile-text"><span class="eyebrow">{escape(s['tiles_note'])}</span><strong>{escape(name)}</strong></span>
                     </a></li>''')
         body = f'''
@@ -610,7 +608,7 @@ FOOTER_COLS = [
 FOOTER_LEGAL = [('Aviso legal', '#'), ('Privacidad', '#'), ('Cookies', '#')]
 
 SOCIAL = [  # (nombre, enlace, contenido del SVG 24 × 24)
-    ('Instagram', '#', '<rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle>'
+    ('Instagram', 'https://www.instagram.com/bicismendiz_es/', '<rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle>'
                        '<circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"></circle>'),
     ('YouTube', '#', '<rect x="2" y="5" width="20" height="14" rx="4"></rect><path d="m10 9 5 3-5 3z" fill="currentColor"></path>'),
     ('Facebook', '#', '<path d="M14 21v-7.5h2.6l.4-3H14V8.7c0-.9.3-1.5 1.5-1.5H17V4.5a20 20 0 0 0-2.3-.1c-2.3 0-3.7 1.4-3.7 3.9v2.2H8.5v3H11V21"></path>'),
@@ -633,7 +631,7 @@ def footer(p):
     <div class="container site-footer__body">
       <div class="site-footer__top">
         <div class="site-footer__brand">
-          <img src="{p.url('assets/img/compartido/logo.webp')}" alt="Mendiz" width="157" height="19" loading="lazy">
+          <img src="{p.url('assets/img/compartido/logo.webp')}" alt="Mendiz" width="157" height="19" loading="lazy" decoding="async">
           <p class="site-footer__desc">{escape(FOOTER_DESC)}</p>
           <ul class="site-footer__social">{social}
           </ul>
@@ -688,6 +686,12 @@ def main():
                 html = html[:geist.end()] + ICONS_LINK.format(','.join(ICONS)) + html[geist.end():]
             else:
                 print(f'  ! {rel}: sin enlace a Geist ni a Material Symbols; añade los iconos a mano')
+
+        # Política de referencia por defecto para subrecursos y navegación externa
+        if 'name="referrer"' not in html[:html.index('</head>')]:
+            vp = re.search(r'<meta\b[^>]*\bname="viewport"[^>]*>\n?', html)
+            if vp:
+                html = html[:vp.end()] + '<meta content="strict-origin-when-cross-origin" name="referrer">\n' + html[vp.end():]
 
         path.write_text(html, encoding='utf-8')
         print(f'✓ {rel}{"  (superpuesto)" if overlay else ""}')

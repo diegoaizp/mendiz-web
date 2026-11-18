@@ -104,11 +104,10 @@
 .home-category__name a::after { content: ""; position: absolute; inset: 0; }
 
 /* Bicis destacadas: carrusel con nombre fijo ------------------------------
-   Mantiene el carrusel de la web actual (bici central, vecinas a los lados
-   más pequeñas y atenuadas, bucle y líneas de progreso) sobre fondo blanco.
-   El carrusel sangra hasta el borde de la ventana. js/main.js
-   ([data-showcase]) coloca cada bici con --x (distancia en bicis a la
-   central, decimal mientras se mueve), --s (escala) y la opacidad.
+   Bici central, vecinas a los lados más pequeñas y atenuadas, bucle y líneas
+   de progreso sobre fondo blanco. El carrusel sangra hasta el borde de la
+   ventana. js/main.js ([data-showcase]) coloca cada bici con --x (distancia
+   en bicis a la central, decimal mientras se mueve), --s (escala) y la opacidad.
    Medidas en cqi (ancho de la ventana):
    --w       ancho de la bici central
    --spread  separación entre bicis, en anchos de bici                     */
@@ -254,7 +253,7 @@
   transition: transform 520ms cubic-bezier(0.55, 0, 0.75, 0.3) calc(var(--i, 0) * 45ms);
 }
 
-/* Pausa + líneas de progreso (como los puntos de la web actual) */
+/* Pausa + líneas de progreso */
 .home-showcase__nav {
   display: flex;
   justify-content: center;
@@ -432,24 +431,15 @@
 }
 
 /* MPL Concept (.home-mpl) =====================================================
-   Modelo destacado: tarjeta redondeada sobre el gris de producto, partida en dos mitades.
-   Foto de estudio a sangre a la izquierda; a la derecha, el recorte de la
-   bici, la navegación entre modelos MPL y, debajo, el texto y un botón con
-   borde. Hasta 1024, foto arriba y texto debajo.
-   Navegación (js/main.js [data-mpl-feat]): las fotos, las
-   bicis y los nombres se apilan en la misma celda. La foto nueva se revela
-   desde el lado al que se navega con la anterior debajo, casi quieta (como
-   la galería de las fichas); la bici sale y entra escalonada. Curvas de
-   entrada y salida suaves, ~1,2 s. */
+   Tarjeta redondeada sobre el gris de producto, partida en dos mitades:
+   texto y CTA a la izquierda y foto de estudio a la derecha con «MPL Concept»
+   centrado encima. Hasta 1024, la foto va arriba y el texto debajo. */
 .home-mpl {
-  --home-mpl-dur: 1200ms;
-  --home-mpl-ease: cubic-bezier(0.55, 0, 0.25, 1);
   display: grid;
   overflow: hidden;
   border-radius: var(--r-media);
   background: var(--c-product);
 }
-/* Algo más baja que al principio */
 .home-mpl__photo { position: relative; overflow: hidden; aspect-ratio: 5 / 6; background: #d9dadb; }
 @media (min-width: 600px) { .home-mpl__photo { aspect-ratio: 3 / 2; } }
 .home-mpl__photo img {
@@ -460,35 +450,7 @@
   object-fit: cover;
   object-position: 50% 55%;
 }
-/* Foto por revelado: la nueva (.is-active) se descubre por encima con un
-   recorte que se abre desde el lado de la navegación y un leve
-   desplazamiento; la anterior (.is-prev) queda debajo y apenas se mueve.
-   El punto de partida lo pone js/main.js (.is-entering). */
-.home-mpl__photo .home-mpl__slide { visibility: hidden; }
-.home-mpl__photo .home-mpl__slide.is-prev {
-  z-index: 1;
-  visibility: visible;
-  transform: translateX(calc(var(--home-mpl-dir, 1) * -3%));
-  transition: transform var(--home-mpl-dur) var(--home-mpl-ease);
-}
-.home-mpl__photo .home-mpl__slide.is-active {
-  z-index: 2;
-  visibility: visible;
-  clip-path: inset(0 0 0 0);
-  transform: none;
-  transition: clip-path var(--home-mpl-dur) var(--home-mpl-ease), transform var(--home-mpl-dur) var(--home-mpl-ease);
-}
-.home-mpl__photo .home-mpl__slide.is-active.is-entering {
-  clip-path: inset(0 0 0 100%);
-  transform: translateX(8%);
-  transition: none;
-}
-.home-mpl--back .home-mpl__photo .home-mpl__slide.is-active.is-entering {
-  clip-path: inset(0 100% 0 0);
-  transform: translateX(-8%);
-}
-/* «MPL Concept» en Round 8 Four, centrado sobre la foto.
-   Velo suave para que el blanco se lea sobre el fondo claro. */
+/* «MPL Concept» en Round 8 Four, centrado sobre la foto con velo suave */
 .home-mpl__photo::after {
   content: "";
   position: absolute;
@@ -517,94 +479,18 @@
   gap: var(--s-6);
   padding: var(--s-6) var(--s-5) var(--s-7);
 }
-.home-mpl__stage { display: grid; gap: var(--s-4); width: 100%; max-width: 560px; margin-inline: auto; }
-.home-mpl__bike { display: grid; }
-.home-mpl__bike img {
-  grid-area: 1 / 1;
-  display: block;
-  width: 100%;
-  height: auto;
-}
-/* Bici escalonada: la actual sale (fundido y desplazamiento hacia el lado
-   contrario) y, poco después, la nueva entra desde el lado de la navegación */
-.home-mpl__bike .home-mpl__slide {
-  opacity: 0;
-  transform: translateX(calc(var(--home-mpl-dir, 1) * 6%));
-  transition: opacity calc(var(--home-mpl-dur) * 0.55) var(--home-mpl-ease), transform calc(var(--home-mpl-dur) * 0.55) var(--home-mpl-ease);
-}
-.home-mpl__bike .home-mpl__slide.is-leaving { transform: translateX(calc(var(--home-mpl-dir, 1) * -6%)); }
-.home-mpl__bike .home-mpl__slide.is-active {
-  opacity: 1;
-  transform: none;
-  transition-duration: calc(var(--home-mpl-dur) * 0.8);
-  transition-delay: calc(var(--home-mpl-dur) * 0.3);
-}
-/* Nombre y precio del modelo a la izquierda; «01 / 07» y flechas a la derecha */
-.home-mpl__nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); }
-.home-mpl__models { display: grid; min-width: 0; }
-.home-mpl__model {
-  grid-area: 1 / 1;
-  display: grid;
-  gap: 2px;
-  justify-self: start;
-  opacity: 0;
-  visibility: hidden;
-  text-decoration: none;
-  transition: opacity calc(var(--home-mpl-dur) * 0.6) var(--home-mpl-ease), visibility 0s linear calc(var(--home-mpl-dur) * 0.6);
-}
-.home-mpl__model.is-active { opacity: 1; visibility: visible; transition-delay: calc(var(--home-mpl-dur) * 0.25), 0s; }
-.home-mpl__model strong { font-weight: var(--fw-medium); }
-.home-mpl__model span { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
-@media (hover: hover) and (pointer: fine) {
-  .home-mpl__model:hover strong { text-decoration: underline; text-underline-offset: 0.2em; }
-}
-.home-mpl__controls { display: flex; align-items: center; gap: var(--s-3); flex-shrink: 0; }
-.home-mpl__count {
-  display: flex;
-  gap: 0.3em;
-  margin-right: var(--s-2);
-  font-size: var(--fs-sm);
-  color: var(--c-ink-2);
-  font-variant-numeric: tabular-nums;
-}
-/* Flechas como las de la galería de las fichas: círculo blanco con flecha
-   fina de Material Symbols; desactivada (primer / último modelo), sin fondo. */
-.home-mpl .rail__btn { width: 48px; height: 48px; border-color: transparent; background: var(--c-paper); color: var(--c-ink); }
-.home-mpl .rail__btn .material-symbols-outlined {
-  font-size: 30px;
-  line-height: 1;
-  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 40;
-}
-.home-mpl .rail__btn:disabled { opacity: 1; border-color: var(--c-line); background: transparent; color: var(--c-ink-3); }
-@media (hover: hover) and (pointer: fine) {
-  .home-mpl .rail__btn:not(:disabled):hover { background: rgb(255 255 255 / 0.6); }
-}
-@media (max-width: 767px) { .home-mpl .rail__btn { width: 44px; height: 44px; } }
-@media (prefers-reduced-motion: reduce) {
-  .home-mpl { --home-mpl-dur: 1ms; }
-}
 .home-mpl__body { display: grid; justify-items: start; gap: var(--s-3); max-width: 46ch; }
 .home-mpl__text { color: var(--c-ink-2); }
 .home-mpl__cta { margin-top: var(--s-3); }
 @media (min-width: 1024px) {
   .home-mpl { grid-template-columns: 1fr 1fr; }
-  /* Foto vertical que manda en la altura de la tarjeta */
   .home-mpl__photo { aspect-ratio: auto; min-height: clamp(500px, 48vw, 740px); }
   .home-mpl__name { font-size: clamp(4.5rem, 6.5vw, 8rem); }
   .home-mpl__info { gap: clamp(var(--s-7), 5vw, var(--s-9)); padding: var(--s-7) clamp(var(--s-6), 6vw, var(--s-10)); }
 }
-
-/* Versión simplificada (.home-mpl--simple): sin bici ni
-   navegación. Texto a la izquierda y foto de estudio a la derecha; hasta
-   1024, la foto arriba. */
 .home-mpl--simple .home-mpl__photo { order: -1; }
-/* Fondo del texto = el de la ficha MPL de las páginas de categoría
-   (.choice--centered, components.css) */
 .home-mpl--simple .home-mpl__info { background: linear-gradient(to bottom, #d9dce3, #eaeef6); }
-/* Foto ampliada para que la bici se vea más grande, centrada en ella */
 .home-mpl--simple .home-mpl__photo img { object-position: 50% 55%; scale: 1.2; transform-origin: 50% 50%; transition: transform var(--dur-media) var(--ease); }
-/* Ligero zoom de la foto al pasar por la tarjeta, como «Encuentra tu Mendiz»
-   (.choice__item:hover). El nombre «MPL Concept» no se mueve. */
 .home-mpl--simple:hover .home-mpl__photo img { transform: scale(1.03); }
 @media (min-width: 1024px) {
   .home-mpl--simple .home-mpl__photo { order: 0; }

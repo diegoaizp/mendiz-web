@@ -202,8 +202,8 @@
 .color-picker { margin: 0; padding: 0; border: 0; }
 .color-picker legend { padding: 0; margin-bottom: var(--s-3); font-size: var(--fs-sm); color: var(--c-ink-2); }
 .color-picker__options { display: flex; gap: var(--s-2); }
-.color-picker__opt { position: relative; display: grid; place-items: center; width: var(--target); height: var(--target); cursor: pointer; }
-.color-picker__opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.color-picker__option { position: relative; display: grid; place-items: center; width: var(--target); height: var(--target); cursor: pointer; }
+.color-picker__option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .color-picker__dot {
   width: 28px;
   height: 28px;
@@ -212,8 +212,8 @@
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), 0 0 0 3px var(--c-paper), 0 0 0 4px transparent;
   transition: box-shadow var(--dur-fast) var(--ease);
 }
-.color-picker__opt input:checked + .color-picker__dot { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), 0 0 0 3px var(--c-paper), 0 0 0 5px var(--c-accent); }
-.color-picker__opt input:focus-visible + .color-picker__dot { outline: 2px solid var(--c-focus); outline-offset: 6px; }
+.color-picker__option input:checked + .color-picker__dot { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), 0 0 0 3px var(--c-paper), 0 0 0 5px var(--c-accent); }
+.color-picker__option input:focus-visible + .color-picker__dot { outline: 2px solid var(--c-focus); outline-offset: 6px; }
 
 /* Subnavegación interna fija ---------------------------------------------- */
 .subnav {
@@ -238,6 +238,7 @@
   overflow-x: auto;
   scrollbar-width: none;
   font-size: var(--fs-sm);
+  scroll-target-group: auto;
 }
 .subnav__links::-webkit-scrollbar { display: none; }
 .subnav__links a {
@@ -250,8 +251,8 @@
   transition: color var(--dur-fast) var(--ease);
 }
 .subnav__links a:hover,
-.subnav__links a[aria-current="true"] { color: var(--c-ink); }
-.subnav__links a[aria-current="true"]::after {
+.subnav__links a:is(:target-current, [aria-current="true"]) { color: var(--c-ink); }
+.subnav__links a:is(:target-current, [aria-current="true"])::after {
   content: "";
   position: absolute;
   inset: auto 0 -1px 0;
@@ -283,9 +284,8 @@
   .intro--center > :last-child { grid-column: 1; }
 }
 .intro--center > .heading-editorial { max-width: 24ch; }
-/* El titular de la ficha va en una línea (#intro-title): ocupa lo que mida y se
-   centra en la página, aunque sea más ancho que 24ch o que la columna */
-.intro--center > #intro-title { width: max-content; max-width: none; justify-self: center; text-align: center; }
+/* El titular display de la ficha va en una línea en escritorio y se centra en la página */
+.intro--center > .intro__title--display { width: max-content; max-width: none; justify-self: center; text-align: center; }
 .intro--center .intro__text { justify-items: center; gap: var(--s-4); }
 /* Toda la descripción al mismo cuerpo y color: algo mayor que la entradilla
    (20 px en móvil → 24 px en escritorio) */
@@ -405,10 +405,10 @@
 @media (max-width: 599px) { .geometry__svg .geometry__key { font-size: 46px; stroke-width: 20px; } }
 .geometry__svg [data-geometry] { cursor: default; transition: opacity var(--dur-fast) var(--ease); }
 /* Al destacar una cota, el resto se apaga para que la elegida tenga presencia */
-.geometry__svg:has(.is-hl) [data-geometry]:not(.is-hl) { opacity: 0.2; }
-.geometry__svg .is-hl .geometry__dimension { stroke-width: 2.25px; }
-.geometry__svg .is-hl .geometry__extension { stroke: var(--c-ink-2); }
-.geometry__svg .is-hl .geometry__key { fill: var(--geometry-mark); font-weight: 600; }
+.geometry__svg:has(.is-highlighted) [data-geometry]:not(.is-highlighted) { opacity: 0.2; }
+.geometry__svg .is-highlighted .geometry__dimension { stroke-width: 2.25px; }
+.geometry__svg .is-highlighted .geometry__extension { stroke: var(--c-ink-2); }
+.geometry__svg .is-highlighted .geometry__key { fill: var(--geometry-mark); font-weight: 600; }
 
 /* Tabla de geometría como listado: sin rejilla, solo filas
    separadas por una línea fina, tallas en negro arriba y valores centrados. Las unidades van en
@@ -445,9 +445,9 @@
 
 .geometry-table tbody tr { transition: background-color var(--dur-fast) var(--ease); }
 .geometry-table tbody tr:hover,
-.geometry-table tbody tr.is-hl { background: var(--c-subtle); }
+.geometry-table tbody tr.is-highlighted { background: var(--c-subtle); }
 .geometry-table tbody tr:hover th,
-.geometry-table tbody tr.is-hl th { background: var(--c-subtle); }
+.geometry-table tbody tr.is-highlighted th { background: var(--c-subtle); }
 .geometry-table__key {
   display: inline-grid;
   flex: none;
@@ -461,7 +461,7 @@
   transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 /* La fila destacada enciende su letra en el mismo verde que la cota del esquema */
-.geometry-table tbody tr.is-hl .geometry-table__key { background: var(--geometry-mark); border-color: var(--geometry-mark); color: #fff; }
+.geometry-table tbody tr.is-highlighted .geometry-table__key { background: var(--geometry-mark); border-color: var(--geometry-mark); color: #fff; }
 
 /* Móvil: la columna de medidas queda fija con sombra y las tallas se desplazan por debajo */
 @media (max-width: 767px) {
@@ -538,7 +538,7 @@
 .build-card[data-type="mpl"] .build-card__frame { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-paper); }
 /* Colores disponibles: puntos bajo la bici, centrados en el pie de la foto.
    --sw = color; --custom = multicolor (Only For You); --gold = mitad color,
-   mitad oro (logos de las MPL, como las muestras del configurador oficial). */
+   mitad oro (logos de las ediciones MPL). */
 .build-card__media:has(.build-card__colors) { position: relative; }
 .build-card__colors {
   position: absolute;
@@ -662,6 +662,18 @@
 .build-card:hover .build-card__cta::before { transform: translateX(3px); }
 
 .builds__note { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-5); align-items: center; margin-top: var(--s-5); font-size: var(--fs-sm); color: var(--c-ink-2); }
+/* Despiece completo desplegable en la tarjeta (fichas que aún no tienen
+   configurador local). Va entre las piezas y el precio y queda por encima de
+   la capa que hace clicable la tarjeta, como «Comparar». */
+.builds--models .build-card__body:has(.build-card__details) { grid-template-rows: auto auto auto auto 1fr; }
+.build-card__details { position: relative; z-index: 3; grid-area: 3 / 1 / 4 / -1; min-width: 0; font-size: var(--fs-sm); }
+.build-card__details summary { cursor: pointer; padding-block: var(--s-2); color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 4px; }
+.build-card__details summary:hover { color: var(--c-ink); }
+.build-card__details .specs { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: var(--s-2); }
+.build-card__details .specs > div { grid-template-columns: minmax(85px, 0.8fr) minmax(0, 1.4fr); gap: var(--s-3); }
+@media (max-width: 767px) { .build-card__details .specs > div { grid-template-columns: 1fr; gap: 4px; } }
+.builds--models .build-card:has(.build-card__details) .build-card__price { grid-area: 4 / 1 / 5 / -1; }
+.builds--models .build-card:has(.build-card__details) .build-card__cta { grid-area: 5 / 1 / 6 / -1; }
 
 /* ==========================================================================
    Bloques de la ficha
@@ -678,6 +690,32 @@
 @media (min-width: 768px) { .glance__list--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .glance__list--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .glance__list--4 .glance__value { font-size: clamp(3.5rem, 2.5rem + 3.4vw, 6.5rem); }
+/* Cifra larga o con texto («700 x 50», «100 o 120 mm», «Carbono»): cuerpo menor
+   para que no desborde la columna */
+.glance .glance__value--text { font-size: clamp(2.25rem, 1.75rem + 1.8vw, 3.75rem); }
+
+/* Tablas de texto (comparativa con la familia, autonomía por nivel): misma
+   base que .geometry-table, pero con celdas que parten línea y alineadas a
+   la izquierda; la fila del modelo de la ficha se marca con .is-current */
+.compare-table th,
+.compare-table td { text-align: left; }
+.compare-table td { min-width: 8rem; white-space: normal; }
+.compare-table tbody tr.is-current th,
+.compare-table tbody tr.is-current td { background: var(--c-subtle); color: var(--c-ink); font-weight: var(--fw-medium); }
+.compare-section .table-scroll { margin-top: var(--s-6); }
+.feature__text > .table-scroll { width: 100%; max-width: calc(var(--fs-lead) * 27.85); }
+.feature__text > .feature__note { font-size: var(--fs-sm); }
+
+/* Geometría en imagen (fichas sin plano vectorial ni tabla todavía) */
+.geometry__image { display: block; width: 100%; max-width: 1100px; height: auto; margin: 0 auto var(--s-5); }
+
+/* Imágenes pendientes (marcador SVG): el marco conserva su proporción y el
+   símbolo no se recorta */
+img.catalog-placeholder { background: #e8e8e8; object-fit: contain; object-position: center; }
+.highlights__card:has(> .catalog-placeholder) { background: #e8e8e8; color: var(--c-ink); }
+.highlights__card:has(> .catalog-placeholder)::after { background: none; }
+.highlights__card:has(> .catalog-placeholder) .highlights__text > p { color: var(--c-ink-2); }
+.gallery:has(.catalog-placeholder) .gallery__count { color: var(--c-ink); text-shadow: none; }
 
 /* Diseño y rendimiento (.highlights): tarjetas grandes sobre gris ----------
    Sección .section--subtle. El rail ocupa todo el ancho: la primera tarjeta
@@ -810,12 +848,11 @@ p.scroll-story__proof,
 .on-dark .link-arrow:hover { text-decoration-color: currentColor; }
 
 /* Características principales: zigzag editorial sobre blanco (.features) ---
-   Plantilla común a todas las fichas (sustituye a «Tecnologías», .scroll-story--split,
-   que siguen usando las fichas aún sin actualizar). Cada fila (.feature):
-   imagen 5:4 a un lado, titular y explicación al otro. En escritorio y
-   tableta los lados se alternan; en móvil, imagen y después texto. Todas las
-   filas son iguales; la prioridad la marca el orden. --focus (en el style de la
-   figura) mueve el recorte para no ocultar el detalle explicado. */
+   Cada fila (.feature): imagen 5:4 a un lado, titular y explicación al otro.
+   En escritorio y tableta los lados se alternan; en móvil, imagen y después
+   texto. Todas las filas son iguales; la prioridad la marca el orden.
+   --focus (en el style de la figura) mueve el recorte para no ocultar el
+   detalle explicado. */
 .features__list { display: grid; gap: calc(var(--s-8) + var(--s-4)); margin: 0; padding: 0; list-style: none; }
 @media (min-width: 768px) { .features__list { gap: calc(var(--s-9) + var(--s-4)); } }
 .feature { display: grid; gap: var(--s-5); align-items: center; }
@@ -932,37 +969,8 @@ p.scroll-story__proof,
 }
 .in-use__play[hidden] { display: none; }
 
-/* Frase opcional sobre la foto: abajo a la izquierda (data-claim="top": arriba).
-   Velo solo en esa franja para el contraste. */
-.in-use__frame:has(.in-use__claim)::after {
-  content: "";
-  position: absolute;
-  inset: 45% 0 0;
-  background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0));
-  pointer-events: none;
-}
-.in-use__frame[data-claim="top"]:has(.in-use__claim)::after {
-  inset: 0 0 45%;
-  background: linear-gradient(to bottom, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0));
-}
-.in-use__claim {
-  position: absolute;
-  z-index: 1;
-  left: var(--margin);
-  bottom: var(--s-5);
-  max-width: min(18ch, calc(100% - 2 * var(--margin)));
-  color: var(--c-paper);
-  text-wrap: balance;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.25);
-}
-.in-use__frame[data-claim="top"] .in-use__claim { top: var(--s-5); bottom: auto; }
-@media (min-width: 768px) {
-  .in-use__claim { left: var(--s-7); bottom: var(--s-7); }
-  .in-use__frame[data-claim="top"] .in-use__claim { top: var(--s-7); }
-}
-
 /* Acceso fijo a montajes (.builds-button) ---------------------------------------
-   Oculto al cargar; js/main.js ([data-builds-fab]) le pone .is-visible cuando el
+   Oculto al cargar; js/main.js ([data-builds-button]) le pone .is-visible cuando el
    hero ya no se ve y lo quita sobre los montajes, el distribuidor y el pie.
    Escritorio: pestaña vertical pegada al borde derecho, centrada en alto; cabe
    en el margen de página, así que no tapa el contenido de la retícula.
@@ -1028,9 +1036,8 @@ p.scroll-story__proof,
 }
 @media print { .builds-button { display: none; } }
 
-/* Detalles y equipamiento (antes «Integración y estándares»): cards laterales
-   sobre blanco ----------------------------------------------------------------
-   Usa el rail (flechas en la cabecera). .rail--wide: cards más grandes
+/* Detalles y equipamiento: tarjetas laterales sobre blanco -------------------
+   Usa el rail (flechas en la cabecera). .rail--wide: tarjetas más grandes
    (2,4 por pantalla en escritorio) para que el desplazamiento lateral se lea. */
 @media (min-width: 1024px) { .rail--wide .rail__track { grid-auto-columns: calc((100% - var(--gutter) * 2) / 2.4); } }
 .info-card {
@@ -1170,8 +1177,8 @@ p.scroll-story__proof,
 @media (max-width: 767px) { .faq--plus .faq__answer { padding-left: 0; } }
 /* El acordeón recorta su contenido (::details-content, components.css), lo que
    anula position: sticky: en «Geometría y tallas» se deja visible al abrir. */
-#geometria::details-content { transition: height 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease, overflow 300ms allow-discrete, content-visibility 300ms allow-discrete; }
-#geometria[open]::details-content { overflow: visible; }
+.faq__item:has(.geometry)::details-content { transition: height 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease, overflow 300ms allow-discrete, content-visibility 300ms allow-discrete; }
+.faq__item:has(.geometry)[open]::details-content { overflow: visible; }
 
 .specs { display: grid; column-gap: var(--s-8); border-top: 1px solid var(--c-line); }
 @media (min-width: 768px) { .specs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1202,28 +1209,43 @@ p.scroll-story__proof,
 
 /* Only For You (.ofy-banner--feature): estilos en components.css (también los usa la home). */
 
-/* Prueba: titular de la introducción de la ficha en Round 8 Four.
-   Para volver a Geist basta con borrar este bloque. */
-#intro-title {
+/* Titular display de la introducción de la ficha en Round 8 Four */
+.intro__title--display {
   font-family: var(--f-display);
   font-weight: var(--fw-display);
   letter-spacing: 0.005em;
   text-transform: uppercase;
-  /* Más grande y siempre en una línea: el tamaño sigue al ancho de la ventana
-     hasta 80 px, así que cabe también en móvil */
   font-size: clamp(1.25rem, 6vw, 5rem);
   line-height: 1;
   white-space: nowrap;
   text-wrap: nowrap;
 }
-/* Móvil: en una sola línea quedaba en ~22 px. Se deja partir en dos o tres
-   líneas equilibradas y gana tamaño. */
+/* Móvil: se deja partir en dos o tres líneas equilibradas para mantener cuerpo */
 @media (max-width: 767px) {
-  .intro--center > #intro-title { width: auto; max-width: 100%; }
-  #intro-title {
+  .intro--center > .intro__title--display { width: auto; max-width: 100%; }
+  .intro__title--display {
     font-size: clamp(2.25rem, 11vw, 3.5rem);
     line-height: 1.05;
     white-space: normal;
     text-wrap: balance;
   }
+}
+
+/* Only For You pendiente: rótulo gris separado del titular y su llamada a la acción. */
+.ofy-banner--feature:has(.ofy-placeholder),
+.choice__item--only-for-you:has(.ofy-placeholder) { background: #e8e8e8; color: var(--c-ink); }
+.ofy-banner--feature:has(.ofy-placeholder)::after,
+.choice__item--only-for-you:has(.ofy-placeholder) .choice__media::after { background: none; }
+.ofy-banner--feature:has(.ofy-placeholder) .ofy-banner__media { background: #e8e8e8; }
+.ofy-banner--feature .ofy-banner__media img.ofy-placeholder,
+.choice__item--only-for-you .choice__media img.ofy-placeholder {
+  width: 100%;
+  height: 50%;
+  object-fit: contain;
+  object-position: center;
+  transform: none;
+}
+.ofy-banner--feature:has(.ofy-placeholder) :focus-visible { outline-color: var(--c-ink); }
+@media (min-width: 768px) {
+  .ofy-banner--feature .ofy-banner__media img.ofy-placeholder { left: 50%; width: 50%; height: 100%; }
 }

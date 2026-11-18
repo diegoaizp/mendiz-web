@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MENDIZ — Blog (primer planteamiento). Solo usa tokens de css/tokens.css.
+   MENDIZ — Blog y plantilla de artículos. Solo usa tokens de css/tokens.css.
    ========================================================================== */
 
 /* Artículo destacado: imagen grande + texto debajo (móvil) / al lado (1024) */
@@ -40,7 +40,7 @@
 .blog-news { display: grid; gap: var(--s-5); justify-items: start; padding-block: var(--s-9); border-top: 1px solid var(--c-line); margin-top: var(--s-9); }
 .blog-news__title { max-width: 16ch; text-wrap: balance; }
 .blog-news__form { display: flex; flex-wrap: wrap; gap: var(--s-3); width: 100%; max-width: 32rem; }
-.blog-news__form input { flex: 1 1 14rem; min-height: var(--target); padding-inline: var(--s-4); border: 1px solid var(--c-line); border-radius: var(--r-ctl, 0); font: inherit; background: var(--c-paper); color: var(--c-ink); }
+.blog-news__form input { flex: 1 1 14rem; min-height: var(--target); padding-inline: var(--s-4); border: 1px solid var(--c-line); border-radius: var(--r-control); font: inherit; background: var(--c-paper); color: var(--c-ink); }
 .blog-news__note { font-size: var(--fs-label); line-height: var(--lh-label); color: var(--c-ink-3); }
 
 /* ==========================================================================

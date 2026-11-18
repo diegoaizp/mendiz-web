@@ -19,7 +19,7 @@
   --c-footer: #000000;       /* footer */
   --c-line-dark: rgb(255 255 255 / 0.14); /* divisores sobre oscuro */
   --c-on-dark-2: rgb(248 248 245 / 0.7); /* texto secundario sobre imagen/oscuro */
-  /* Acento común (acordado 31/10): CTAs principales, enlaces importantes y
+  /* Acento común: CTAs principales, enlaces importantes y
      estados seleccionados. Su par oscuro vive en body.is-dark (css/base.css). */
   --c-accent: #1d1d1d;
   --c-accent-hover: #3a3a3a;
@@ -58,7 +58,7 @@
   --fs-model-card: clamp(3.5rem, 2.5rem + 3vw, 6rem);    /* nombre en tarjeta */
   --lh-display: 0.88;
 
-  /* Espacio: 4 · 8 · 12 · 16 · 24 · 32 · 40 · 56 · 80 · 112 · 160 -------- */
+  /* Espacio: 4 · 8 · 12 · 16 · 24 · 32 · 40 · 56 · 80 · 112 -------------- */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -69,7 +69,6 @@
   --s-8: 3.5rem;
   --s-9: 5rem;
   --s-10: 7rem;
-  --s-11: 10rem;
   --s-section: clamp(3rem, 1.5rem + 5vw, 7rem);   /* 48-64 móvil · 80-112 escritorio */
 
   /* Layout: 4 / 8 / 12 columnas ------------------------------------------ */

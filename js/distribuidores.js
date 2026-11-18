@@ -1,7 +1,7 @@
 /* ==========================================================================
    MENDIZ — Localizador de distribuidores
    Filtra el listado (texto, provincia, cerca de mí), lo agrupa por provincia
-   y lo sincroniza con el mapa (Leaflet). Datos en js/distribuidores-data.js.
+   y lo sincroniza con el mapa (Leaflet). Datos en js/data/distribuidores-data.js.
    ========================================================================== */
 (() => {
   const root = document.querySelector('[data-locator]');
@@ -117,7 +117,7 @@
       order.sort((a, b) => dist(a) - dist(b));
     }
 
-    // Sin búsqueda ni filtro: provincias plegadas (solo cabecera con el nº de
+    // Sin búsqueda ni filtro: provincias plegadas (solo cabecera con el n.º de
     // tiendas) y todas visibles en el mapa. Al elegir una (pin, desplegable o
     // cabecera) se despliega sola y las demás desaparecen del listado.
     const collapsed = state.country === 'ES' && !state.q && !state.prov && !state.origin;
@@ -125,13 +125,13 @@
       const items = groups.get(p);
       const count = `${items.length} ${items.length === 1 ? 'tienda' : 'tiendas'}`;
       const open = !collapsed;
-      return `<section class="locator-group${open ? ' is-open' : ''}" data-group="${esc(p)}" aria-label="${esc(p)}">
+      return `<div class="locator-group${open ? ' is-open' : ''}" data-group="${esc(p)}">
         <h3 class="locator-group__title"><button type="button" class="locator-group__toggle" data-toggle="${esc(p)}" aria-expanded="${open}">
           <span>${esc(p)}</span> <small>${count}</small>
           <span class="material-symbols-outlined locator-group__chevron" aria-hidden="true">expand_more</span>
         </button></h3>
         ${open ? `<ul>${items.map(itemHTML).join('')}</ul>` : ''}
-      </section>`;
+      </div>`;
     }).join('');
 
     // Recuento y estado vacío
@@ -187,10 +187,9 @@
     // encuadre real lo hace updateMap() cuando el mapa tiene tamaño.
     map = L.map('locator-map', { minZoom: 3, maxZoom: 12, preferCanvas: false, scrollWheelZoom: false, zoomSnap: 0.25, attributionControl: true }).setView([39.9, -3.5], 5);
     if (mapVisible()) map.fitBounds(PENINSULA);
-    // Teselas de OpenStreetMap, pasadas a grises en css/distribuidores.css.
-    // En producción: proveedor con clave (Mapbox, MapTiler, Stadia…) y estilo propio.
-    // Sin teselas ni claves: contornos de provincias propios (js/espana-provincias.js),
-    // navegables con zoom y arrastre. El color de fondo lo da .locator__map.
+    // Sin teselas ni claves externas: contornos de provincias propios
+    // (js/data/espana-provincias.js), navegables con zoom y arrastre.
+    // El color de fondo lo aporta .locator__map.
     if (window.MENDIZ_ESPANA_GEO) {
       L.geoJSON(window.MENDIZ_ESPANA_GEO, {
         interactive: false,

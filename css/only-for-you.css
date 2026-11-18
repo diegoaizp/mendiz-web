@@ -1,12 +1,11 @@
 /* ==========================================================================
    MENDIZ — Only For You (only-for-you.html) y su listado
    de modelos (only-for-you-modelos.html).
-   Estructura: hero · cuatro pasos · frase a sangre (nueve F14 al hacer scroll) · qué puedes elegir (escena
-   fija de las fichas) · vídeo con «Empieza a configurar» → listado.
+   Estructura: hero · cuatro pasos · frase a sangre · qué puedes elegir
+   (escena fija de las fichas) · vídeo con «Empieza a configurar» → listado.
    Solo lo propio de estas páginas; las fichas
    (.bike-card, .bike-grid, .bike-list--clean), el filtro de categorías
    (.category-filter), .product-hero, .intro, .scroll-story y .page-head son los del sistema.
-   La versión anterior (secuencia de scroll) vive en css/only-for-you-2.css.
    Comportamiento en js/only-for-you.js.
    ========================================================================== */
 

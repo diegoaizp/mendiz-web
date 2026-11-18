@@ -1,5 +1,5 @@
-/* Adaptaciones del catálogo a la estructura de la ficha F14.
-   Las fotos del configurador son imágenes oficiales con fondo claro. */
+/* Adaptaciones provisionales del catálogo a la estructura de ficha.
+   Las imágenes del catálogo tienen fondo claro y se integran con multiply. */
 .catalog-stage { background: #fff; }
 .catalog-stage .product-stage__bike { object-fit: contain; aspect-ratio: 3 / 2; mix-blend-mode: multiply; }
 .catalog-stage .product-stage__ghost { display: none; }
@@ -41,3 +41,19 @@
  .catalog-stage--cutout .product-stage__bike { width: calc(var(--w) * 1cqi); }
 }
 
+/* Imágenes pendientes: el marco conserva su proporción y el símbolo no se recorta. */
+.catalog-product img.catalog-placeholder {
+  background: #e8e8e8;
+  object-fit: contain;
+  object-position: center;
+}
+.catalog-product .highlights__card:has(> .catalog-placeholder) {
+  background: #e8e8e8;
+  color: var(--c-ink);
+}
+.catalog-product .highlights__card:has(> .catalog-placeholder)::after { background: none; }
+.catalog-product .highlights__card:has(> .catalog-placeholder) .highlights__text > p { color: var(--c-ink-2); }
+.catalog-product .gallery:has(.catalog-placeholder) .gallery__count {
+  color: var(--c-ink);
+  text-shadow: none;
+}

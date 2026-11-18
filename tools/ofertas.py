@@ -18,13 +18,7 @@ Para cambiar las ofertas, edita OFERTAS y ejecuta desde la carpeta del proyecto:
     python3 tools/ofertas.py
     python3 tools/header.py      # header y página actual en las páginas nuevas
 
-<head>, header y pie se copian de carretera.html; header.py los rehace después.
-
-PENDIENTE (cliente): modelos, montajes, precio anterior y de oferta y fotos.
-Los cuatro modelos de abajo son los que la web oficial marcaba como
-«¡PROMOCIÓN!» en temporada anterior (precio de modelo, sin
-montajes). Solo la X21 SL tiene fotos en el proyecto; sus montajes son los de
-la ficha actual (x21-sl.html) y se muestran como EJEMPLO de estructura.
+<head>, header y pie se copian de carretera.html; header.py los actualiza después.
 """
 from html import escape
 from pathlib import Path
@@ -32,7 +26,6 @@ import re
 
 ROOT = Path(__file__).resolve().parent.parent
 BASE = ROOT / 'carretera.html'
-OUTLET = 'https://www.bicismendiz.com/bicicletas/temporada-anterior'
 
 CATEGORIAS = [('carretera', 'Carretera'), ('montana', 'Montaña'), ('gravel', 'Gravel'), ('electricas', 'Eléctricas')]
 CAT_LABEL = dict(CATEGORIAS)
@@ -47,8 +40,8 @@ OFERTAS = [
         'slug': 'x21-sl', 'name': 'X21 SL', 'cat': 'montana', 'type': 'Carbono rígido',
         'for': 'La rígida de carbono de la gama, con geometría deportiva para entrenar y competir en circuitos de montaña.',
         'img': 'assets/img/x21-sl/x21-sl-card-1200.webp',
-        'colors': [('Rojo burdeos', '#682532'), ('Antracita', '#4b4d4f')],
-        'price': '1.550 €', 'was': '2.390 €',
+        'colors': [('Rojo burdeos', '#682532'), ('Grafito', '#4b4d4f')],
+        'price': '1.290 €', 'was': '1.490 €',
         'ficha': 'x21-sl.html',
         'builds_from': 'x21-sl.html',
     },
@@ -83,7 +76,7 @@ def shell():
     """<head>…</head>, header y pie de carretera.html."""
     html = BASE.read_text(encoding='utf-8')
     head = html[:html.index('</head>')]
-    head = re.sub(r'<link href="css/catalogo-producto\.css" rel="stylesheet"/>', '', head)
+    head = re.sub(r'<link\b[^>]*href="css/catalogo-producto\.css"[^>]*>\n?', '', head)
     header = re.search(r'<a class="skip-link".*?</header>', html, re.S).group(0)
     footer = html[html.index('<!-- ===================================================== FOOTER'):]
     return head, header, footer
@@ -91,8 +84,8 @@ def shell():
 
 def page(head, header, footer, title, desc, css, body_attr, main):
     head = re.sub(r'<title>.*?</title>', f'<title>{escape(title)}</title>', head)
-    head = re.sub(r'<meta content="[^"]*" name="description"/>', f'<meta content="{escape(desc)}" name="description"/>', head)
-    links = ''.join(f'\n<link href="css/{c}" rel="stylesheet"/>' for c in css)
+    head = re.sub(r'<meta\b[^>]*\bname="description"[^>]*>', f'<meta content="{escape(desc)}" name="description">', head)
+    links = ''.join(f'\n<link href="css/{c}" rel="stylesheet">' for c in css)
     return f'''{head}{links}</head>
 <body{body_attr}>
 {header}
@@ -129,11 +122,11 @@ def swatches(o):
 def card(o, eager=False):
     name = escape(o['name'])
     if o['img']:
-        load = ' fetchpriority="high"' if eager else ' loading="lazy"'
+        load = ' fetchpriority="high"' if eager else ' loading="lazy" decoding="async"'
         media = (f'<div class="bike-card__media">\n<img alt="Mendiz {name}"{load} height="800" '
-                 f'src="{o["img"]}" width="1200"/>\n{swatches(o)}\n</div>')
+                 f'src="{o["img"]}" width="1200">\n{swatches(o)}\n</div>')
     else:
-        media = (f'<div class="bike-card__media bike-card__media--pending"><!-- TODO: foto pendiente -->'
+        media = (f'<div class="bike-card__media bike-card__media--pending">'
                  f'<span aria-hidden="true" class="display">{name}</span></div>')
     second = (f'<a class="btn btn--secondary" href="{o["ficha"]}">Ver ficha<span class="visually-hidden"> de la {name}</span></a>\n'
               if o['ficha'] else '')
@@ -166,28 +159,27 @@ def listing(head, header, footer):
 <!-- ===================================================== MODELOS EN OFERTA
          Tarjetas anchas (.bike-card--wide, .bike-list--clean), una debajo de
          otra, como en los listados de categoría. Filtro por tipo guardado en
-         ?categoria= (js/main.js). Modelo genérico: sin datos de montaje.
-         TODO: modelos y precios pendientes de confirmar. -->
-<section aria-labelledby="ofertas-title" class="container section--flush-top offers">
-<h2 class="visually-hidden" id="ofertas-title">Modelos en oferta</h2>
+         ?categoria= (js/main.js). -->
+<section class="container section--flush-top offers">
+<h2 class="visually-hidden" id="offers-title">Modelos en oferta</h2>
 <div aria-label="Filtrar ofertas por tipo de bici" class="category-filter" data-filter-group=".bike-card[data-type]" data-filter-param="categoria" role="group">
 {buttons}
 </div>
-<p aria-live="polite" class="visually-hidden" data-count=""></p>
-<p class="offers__empty muted" data-empty="" hidden="">Ahora mismo no hay ofertas en este tipo de bici. <a href="ofertas.html">Ver todas las ofertas</a></p>
+<p aria-live="polite" class="visually-hidden" data-count></p>
+<p class="offers__empty muted" data-empty hidden>Ahora mismo no hay ofertas en este tipo de bici. <a href="ofertas.html">Ver todas las ofertas</a></p>
 <ul class="bike-list bike-list--clean">
 {cards}
 </ul>
 </section>
 <!-- ===================================================== DISTRIBUIDOR -->
-<section aria-labelledby="dealer-title" class="section--dark on-dark">
+<section class="section--dark on-dark">
 <div class="container dealer">
 <div>
 <h2 class="heading-editorial" id="dealer-title">Confirma tu talla con tu distribuidor</h2>
 </div>
 <div class="dealer__actions">
 <p class="muted">Las unidades en oferta son limitadas: consulta disponibilidad y talla antes de decidir.</p>
-<a class="btn btn--inverse btn--lg" href="distribuidores.html">Encontrar distribuidor</a>
+<a class="btn btn--inverse btn--lg" href="distribuidores.html">Buscar distribuidor</a>
 </div>
 </div>
 </section>'''
@@ -198,12 +190,10 @@ def listing(head, header, footer):
 
 def builds_grid(o):
     if not o['builds_from']:
-        return ('<!-- TODO: montajes en oferta pendientes -->\n'
-                '<p class="muted offers__pending">Montajes en oferta pendientes de publicar. Consulta disponibilidad con tu distribuidor.</p>')
+        return '<p class="muted offers__pending">Montajes en oferta pendientes de publicar. Consulta disponibilidad con tu distribuidor.</p>'
     html = (ROOT / o['builds_from']).read_text(encoding='utf-8')
     m = re.search(r'<div class="builds builds--models">.*?</article></div>', html, re.S)
-    return ('<!-- TODO: EJEMPLO. Montajes copiados de la ficha actual; '
-            'sustituir por los montajes y precios en oferta. -->\n' + m.group(0))
+    return m.group(0)
 
 
 def model_page(o, head, header, footer):
@@ -215,9 +205,8 @@ def model_page(o, head, header, footer):
 <p class="muted">Desde <strong>{o['price']}</strong> <s><span class="visually-hidden">antes </span>{o['was']}</s>. Montajes de temporada anterior, hasta fin de existencias.</p>
 </header>
 <!-- ===================================================== MONTAJES EN OFERTA
-         Solo la rejilla de montajes (tarjetas compactas .build-card, como en
-         #montajes de las fichas; sin colores). -->
-<section aria-labelledby="montajes-title" class="section section--flush-top" id="montajes">
+         Rejilla de montajes en oferta (tarjetas compactas .build-card). -->
+<section class="section section--flush-top" id="montajes">
 <div class="container">
 <h2 class="visually-hidden" id="montajes-title">Montajes de la {name} en oferta</h2>
 {builds_grid(o)}

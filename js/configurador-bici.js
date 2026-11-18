@@ -2,11 +2,11 @@
    MENDIZ — Configurador (Only For You) · configurador-f14.html
    Columna con todas las secciones abiertas y opciones en tarjetas
    (.configurator-card). El montaje se elige como Grupo + Ruedas, y el color
-   como uno de los tres de serie o «Personalizado», que abre el personalizador en un
-   panel lateral con los mismos campos que el oficial de Mendiz.
+   como uno de los tres de serie o «Personalizado», que abre el personalizador
+   en un panel lateral.
 
-   Datos: window.MENDIZ_F14 (js/f14-montajes.js) y window.MENDIZ_F14_COLORES
-   (js/f14-colores.js). Lee de la URL ?montaje=, ?talla= y el color:
+   Datos: window.MENDIZ_F14 (js/data/f14-montajes.js) y window.MENDIZ_F14_COLORES
+   (js/data/f14-colores.js). Lee de la URL ?montaje=, ?talla= y el color:
      de serie       ?color=blanco
      personalizado  ?pintura=personalizada&color=…&acabado=…&trama=…
                     &acabado-trama=…&pegatinas=…
@@ -18,17 +18,13 @@
    · Ruedas: se cambian con el lápiz en Componentes, entre las
      que admite el grupo. Elegir unas carga su montaje.
    · Color: tres de serie (incluidos) o personalizado (+100 €, trama +100 €,
-     premium +190 €, según la nota del personalizador oficial).
-   · Componentes que se pueden cambiar (reglas provisionales, a validar con
-     Mendiz): bielas y cassette si el dato trae variantes (34-50/32-48 o
-     «34/50 o 36/52», como los platos de la Ultegra); sillín si el mismo
-     cuadro se monta con más de uno; medidas de bielas y manillar (EJEMPLO).
+     premium +190 €).
    ========================================================================== */
 
 (() => {
   const data = window.MENDIZ_F14;
   const PZ = window.MENDIZ_F14_COLORES;
-  const root = document.querySelector('[data-builder]');
+  const root = document.querySelector('[data-configurator]');
   if (!data || !PZ || !root) return;
 
   const DEFAULT_BUILD = 'F14SL.05';
@@ -129,7 +125,7 @@
   // Lo que se ve en la bici, sea de serie o personalizado
   const look = (p = state.paint) => (p.mode === 'serie' ? lookOfSerie(serieOf(p.serie)) : p.custom);
 
-  // Incremento por color (tarifa del personalizador oficial)
+  // Incremento de precio por color personalizado
   function colorExtra(p = state.paint) {
     if (p.mode !== 'custom') return 0;
     const c = p.custom;
@@ -192,8 +188,7 @@
         const prefix = value.replace(token, '').trim();
         return token.split('/').map((v) => ({ label: `${prefix} ${v}`, value: `${prefix} ${v}`, delta: 0 }));
       }
-      // …o con «o»: «Shimano Ultegra 34/50 o 36/52» (platos a elegir, mismo
-      // precio en el configurador oficial)
+      // …o con «o»: «Shimano Ultegra 34/50 o 36/52» (platos a elegir, mismo precio)
       const alt = value.match(/^(.*?)\s*(\d+[/-]\d+(?:\s+o\s+\d+[/-]\d+)+)$/);
       if (alt) {
         return alt[2].split(/\s+o\s+/).map((v) => ({ label: `${alt[1]} ${v}`, value: `${alt[1]} ${v}`, delta: 0 }));
@@ -253,8 +248,8 @@
   const byPrice = (a, b) => a.precio - b.precio;
   const buildsOf = (f) => data.montajes.filter((m) => m.cuadro === f);
   const cheapest = (list) => list.reduce((a, m) => (m.precio < a.precio ? m : a));
-  const groupsOf = (f) => [...new Set(buildsOf(f).sort(byPrice).map((m) => m.grupo))];
-  const wheelsOf = (f, g) => buildsOf(f).filter((m) => m.grupo === g).sort(byPrice);
+  const groupsOf = (f) => [...new Set(buildsOf(f).toSorted(byPrice).map((m) => m.grupo))];
+  const wheelsOf = (f, g) => buildsOf(f).filter((m) => m.grupo === g).toSorted(byPrice);
   const clearCards = (box) => box.querySelectorAll('.configurator-card').forEach((el) => el.remove());
 
   function renderFrames() {
@@ -313,8 +308,7 @@
   });
 
   // 2 · Foto por capas ---------------------------------------------------------
-  // Mismo orden que el personalizador oficial. Se precargan todas las capas
-  // nuevas y se cambian a la vez, para que no parpadee.
+  // Se precargan todas las capas nuevas y se cambian a la vez, sin parpadeo.
   const bike = $('[data-configurator-bike]');
   const slots = Object.fromEntries([...bike.querySelectorAll('[data-layer]')].map((img) => [img.dataset.layer, img]));
   const preloaded = new Map();
@@ -422,19 +416,19 @@
 
   // 4 · Personalizador (panel lateral) ---------------------------------------
   // <dialog> modal: entra desde la derecha y tapa la columna. Lo elegido se
-  // ve en la foto al momento; «Aplicar color» lo confirma y cerrar (✕, Esc)
+  // ve en la foto al momento; «Aplicar color» lo confirma y cerrar (Cancelar, Esc)
   // vuelve a como estaba al abrirlo.
-  const pz = $('[data-configurator-pz]');
-  const pzBody = $('[data-configurator-pz-body]');
-  const pageScroll = typeof lenis !== 'undefined' ? lenis : null; // de js/main.js
+  const pz = $('[data-customizer]');
+  const pzBody = $('[data-customizer-body]');
+  const pageScroll = window.MENDIZ?.lenis || null;
   let snapshot = null;
   const lastPick = { std: null, premium: null };  // para volver al último color de cada tipo
 
-  const PZ_LISTS = { 'customizer-c1': COLORS, 'customizer-trama': PZ.tramas, 'customizer-peg': PZ.pegatinas };
+  const PZ_LISTS = { 'customizer-primary': COLORS, 'customizer-pattern': PZ.tramas, 'customizer-decals': PZ.pegatinas };
   const pzValue = (name) => {
     const c = state.paint.custom;
-    if (name === 'customizer-c1') return colorOf(c.c1).label;
-    if (name === 'customizer-trama') return tramaOf(c.trama).label;
+    if (name === 'customizer-primary') return colorOf(c.c1).label;
+    if (name === 'customizer-pattern') return tramaOf(c.trama).label;
     return pegOf(c.peg).label;
   };
 
@@ -464,26 +458,26 @@
     pzBody.innerHTML = `
         <section class="configurator-customizer__section">
           <div class="configurator-customizer__field">
-            <p class="configurator-customizer__label" id="customizer-l-tipo"><span class="configurator-subtitle">Tipo de color</span></p>
-            <div class="configurator-cards configurator-cards--2" role="radiogroup" aria-labelledby="customizer-l-tipo">${['std', 'premium'].map((t) => card({
-              name: 'customizer-tipo', value: t, checked: t === tier, title: TIERS[t],
+            <p class="configurator-customizer__label" id="customizer-type-label"><span class="configurator-subtitle">Tipo de color</span></p>
+            <div class="configurator-cards configurator-cards--2" role="radiogroup" aria-labelledby="customizer-type-label">${['std', 'premium'].map((t) => card({
+              name: 'customizer-type', value: t, checked: t === tier, title: TIERS[t],
               sub: `+${eur(t === 'premium' ? PZ.precios.premium : PZ.precios.color)}`,
             })).join('')}
             </div>
           </div>
         </section>
-        <section class="configurator-customizer__section">${field('customizer-l-c1', 'Color principal', 'customizer-c1', PZ.colores[tier], c.c1)}${finish('customizer-l-acabado', 'Acabado', 'customizer-acabado', c.finish)}
+        <section class="configurator-customizer__section">${field('customizer-primary-label', 'Color principal', 'customizer-primary', PZ.colores[tier], c.c1)}${finish('customizer-finish-label', 'Acabado', 'customizer-finish', c.finish)}
         </section>
         <section class="configurator-customizer__section">${tier === 'premium' ? `
           <div class="configurator-customizer__field">
             <p class="configurator-customizer__label"><span class="configurator-subtitle">Trama</span></p>
             <p class="configurator-customizer__note">Los colores premium van sin trama.</p>
-          </div>` : `${field('customizer-l-trama', 'Trama', 'customizer-trama', PZ.tramas, c.trama, `<span class="configurator-customizer__price">+${eur(PZ.precios.trama)}</span>`)}${c.trama !== 'none' ? finish('customizer-l-acabado-trama', 'Acabado de la trama', 'customizer-acabado-trama', c.tramaFinish) : ''}`}
+          </div>` : `${field('customizer-pattern-label', 'Trama', 'customizer-pattern', PZ.tramas, c.trama, `<span class="configurator-customizer__price">+${eur(PZ.precios.trama)}</span>`)}${c.trama !== 'none' ? finish('customizer-pattern-finish-label', 'Acabado de la trama', 'customizer-pattern-finish', c.tramaFinish) : ''}`}
         </section>
-        <section class="configurator-customizer__section">${field('customizer-l-peg', 'Pegatinas', 'customizer-peg', PZ.pegatinas, c.peg)}
+        <section class="configurator-customizer__section">${field('customizer-decals-label', 'Pegatinas', 'customizer-decals', PZ.pegatinas, c.peg)}
         </section>
         <p class="configurator-customizer__note">Un color distinto a los de serie suma ${eur(PZ.precios.color)} al PVP y la trama, ${eur(PZ.precios.trama)} más. Los colores premium suman ${eur(PZ.precios.premium)}. El acabado no cambia el precio.</p>`;
-    $('[data-configurator-pz-extra]').textContent = `Color personalizado: +${eur(colorExtra())}`;
+    $('[data-customizer-extra]').textContent = `Color personalizado: +${eur(colorExtra())}`;
   }
 
   function openPz() {
@@ -521,14 +515,14 @@
     refocus(colorsBox, 'configurator-color');
   });
   pz.addEventListener('cancel', (e) => { e.preventDefault(); closePz(false); });   // Esc
-  $('[data-configurator-pz-cancel]').addEventListener('click', () => closePz(false));
-  $('[data-configurator-pz-apply]').addEventListener('click', () => closePz(true));
+  $('[data-customizer-cancel]').addEventListener('click', () => closePz(false));
+  $('[data-customizer-apply]').addEventListener('click', () => closePz(true));
 
   pzBody.addEventListener('change', (e) => {
     const t = e.target;
     const c = state.paint.custom;
     switch (t.name) {
-      case 'customizer-tipo': {
+      case 'customizer-type': {
         const from = tierOf(c.c1);
         if (t.value === from) return;
         lastPick[from] = c.c1;
@@ -536,11 +530,11 @@
         if (t.value === 'premium') c.trama = 'none';
         break;
       }
-      case 'customizer-c1': c.c1 = t.value; break;
-      case 'customizer-acabado': c.finish = t.value; break;
-      case 'customizer-trama': c.trama = t.value; break;
-      case 'customizer-acabado-trama': c.tramaFinish = t.value; break;
-      case 'customizer-peg': c.peg = t.value; break;
+      case 'customizer-primary': c.c1 = t.value; break;
+      case 'customizer-finish': c.finish = t.value; break;
+      case 'customizer-pattern': c.trama = t.value; break;
+      case 'customizer-pattern-finish': c.tramaFinish = t.value; break;
+      case 'customizer-decals': c.peg = t.value; break;
       default: return;
     }
     const scroll = pzBody.scrollTop;
@@ -621,8 +615,6 @@
   });
   modal.addEventListener('close', () => pageScroll?.start());
   $('[data-configurator-modal-close]').addEventListener('click', () => modal.close());
-  // Clic en el fondo (fuera de la caja) cierra
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
 
   // 6 · Componentes --------------------------------------------------------
   function renderParts() {

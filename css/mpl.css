@@ -112,7 +112,7 @@
 /* Ventajas: layout de «Tecnologías» de las fichas (.scroll-story--split,
    css/product.css). Aquí no hay subnavegación, así que la escena fijada
    arranca justo bajo la cabecera. */
-#ventajas.scroll-story.is-pinned { --stage-top: var(--header-h); }
+.mpl-scroll-story.is-pinned { --stage-top: var(--header-h); }
 
 /* Listado: el nombre «G11AM MPL» es el más largo; en 2 columnas baja un
    punto el cuerpo del nombre para que no parta línea. */

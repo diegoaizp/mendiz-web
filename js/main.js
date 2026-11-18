@@ -1,6 +1,7 @@
 /* ==========================================================================
    MENDIZ — Interacciones compartidas
    ========================================================================== */
+(() => {
 
 // Scroll suave (Lenis) --------------------------------------------------------
 // Solo suaviza la rueda/trackpad en escritorio; el táctil sigue siendo nativo.
@@ -26,6 +27,29 @@ function smoothScrollTo(target, behavior = 'smooth') {
   if (typeof target === 'number') window.scrollTo({ top: target, behavior });
   else target.scrollIntoView({ behavior });
 }
+
+// Cierre por clic en el fondo para <dialog> en navegadores sin soporte nativo de
+// closedby="any": exige inicio y fin del gesto fuera de la caja del modal para
+// no cerrar accidentalmente al arrastrar una selección de texto hacia el fondo.
+function bindDialogDismiss(dialog) {
+  if ('closedBy' in HTMLDialogElement.prototype) return;
+  let pressedOutside = false;
+  dialog.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const r = dialog.getBoundingClientRect();
+    pressedOutside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+  });
+  dialog.addEventListener('pointerup', (e) => {
+    if (!pressedOutside) return;
+    pressedOutside = false;
+    const r = dialog.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+  });
+  dialog.addEventListener('close', () => { pressedOutside = false; });
+}
+
+document.querySelectorAll('dialog[closedby="any"]').forEach(bindDialogDismiss);
+window.MENDIZ = { lenis, smoothScrollTo };
 
 // Anclas internas: respetan el scroll-margin-top de cada sección.
 // Los manejadores propios que llaman a preventDefault() tienen prioridad.
@@ -351,7 +375,7 @@ if (overlayHeader) {
 
 // Fichas con subnav: el header se oculta al bajar y reaparece al subir --------
 // Solo cuando la subnav ya está fija arriba; la subnav ocupa entonces su sitio
-// (html.header-hidden → top: 0, ver components.css). Con un panel abierto, el
+// (html.is-header-hidden → top: 0, ver components.css). Con un panel abierto, el
 // menú móvil abierto o el foco dentro del header, no se oculta.
 const stickySubnav = document.querySelector('.subnav');
 if (header && stickySubnav) {
@@ -528,7 +552,7 @@ document.querySelectorAll('[data-showcase]').forEach((root) => {
   const bikes = [...list.children];
   const count = bikes.length;
 
-  const DURATION = 1000;          // ms por bici (como el «smartSpeed» de la web actual)
+  const DURATION = 1000;          // ms por bici
   const SIDE_SCALE = 0.85;        // escala de las vecinas (poco cambio de tamaño)
   const SIDE_OPACITY = 0.45;      // opacidad de las vecinas
   const autoplayMs = parseInt(root.dataset.autoplay, 10) || 0;
@@ -821,36 +845,51 @@ if (themedSections.length) {
 }
 
 // Navegación interna: marca la sección visible -------------------------------
+// Mejora progresiva: en navegadores con CSS scroll-target-group, el estilo
+// visual lo resuelve :target-current sin observadores continuos y solo se
+// sincroniza aria-current en scrollend; como respaldo, IntersectionObserver.
 const subnavLinks = [...document.querySelectorAll('[data-subnav] a')];
 
 if (subnavLinks.length) {
-  const sections = subnavLinks.map((a) => {
-    const hash = a.getAttribute('href');
-    try { return hash.startsWith('#') ? document.querySelector(hash) : null; } catch { return null; }
-  }).filter(Boolean);
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
+  if (window.CSS?.supports?.('scroll-target-group: auto')) {
+    const syncSubnav = () => {
+      const active = subnavLinks.find((a) => a.matches(':target-current'));
       subnavLinks.forEach((a) => {
-        if (a.getAttribute('href') === `#${entry.target.id}`) a.setAttribute('aria-current', 'true');
+        if (a === active) a.setAttribute('aria-current', 'true');
         else a.removeAttribute('aria-current');
       });
-    });
-  }, { rootMargin: '-45% 0px -50% 0px' });
-  sections.forEach((s) => observer.observe(s));
+    };
+    document.addEventListener('scrollend', syncSubnav, { passive: true });
+    requestAnimationFrame(syncSubnav);
+  } else {
+    const sections = subnavLinks.map((a) => {
+      const hash = a.getAttribute('href');
+      try { return hash.startsWith('#') ? document.querySelector(hash) : null; } catch { return null; }
+    }).filter(Boolean);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        subnavLinks.forEach((a) => {
+          if (a.getAttribute('href') === `#${entry.target.id}`) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach((s) => observer.observe(s));
+  }
 }
 
-// Acceso fijo a montajes ([data-builds-fab], fichas) ----------------------------
+// Acceso fijo a montajes ([data-builds-button], fichas) ----------------------
 // Aparece cuando el hero sale de pantalla y se oculta mientras se ven el hero,
 // la sección de destino (montajes), el distribuidor o el pie. El margen
 // superior descuenta la cabecera y la subnavegación fijas: lo que queda debajo
 // de ellas ya no cuenta como visible. Al usarlo, el foco pasa al titular de los
 // montajes (el salto con desplazamiento lo hacen las anclas internas, arriba).
-const buildsFab = document.querySelector('[data-builds-fab]');
+const buildsButton = document.querySelector('[data-builds-button]');
 let buildsTarget = null;
-try { buildsTarget = buildsFab && document.querySelector(buildsFab.getAttribute('href')); } catch { buildsTarget = null; }
+try { buildsTarget = buildsButton && document.querySelector(buildsButton.getAttribute('href')); } catch { buildsTarget = null; }
 
-if (buildsFab && buildsTarget && 'IntersectionObserver' in window) {
+if (buildsButton && buildsTarget && 'IntersectionObserver' in window) {
   const rootStyle = getComputedStyle(document.documentElement);
   const covered = (parseFloat(rootStyle.getPropertyValue('--header-h')) || 0)
     + (document.querySelector('.subnav') ? parseFloat(rootStyle.getPropertyValue('--subnav-h')) || 0 : 0);
@@ -861,17 +900,17 @@ if (buildsFab && buildsTarget && 'IntersectionObserver' in window) {
     document.querySelector('.site-footer'),
   ].filter(Boolean);
   const inView = new Set();
-  const fabObserver = new IntersectionObserver((entries) => {
+  const buttonObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) inView.add(entry.target);
       else inView.delete(entry.target);
     });
-    buildsFab.classList.toggle('is-visible', inView.size === 0);
+    buildsButton.classList.toggle('is-visible', inView.size === 0);
   }, { rootMargin: `-${Math.round(covered)}px 0px 0px 0px` });
-  blockers.forEach((el) => fabObserver.observe(el));
+  blockers.forEach((el) => buttonObserver.observe(el));
 
   const focusTarget = buildsTarget.querySelector('h2') || buildsTarget;
-  buildsFab.addEventListener('click', () => {
+  buildsButton.addEventListener('click', () => {
     if (!focusTarget.hasAttribute('tabindex')) focusTarget.setAttribute('tabindex', '-1');
     // Después del salto: la navegación al ancla recoloca el foco
     setTimeout(() => focusTarget.focus({ preventScroll: true }), 0);
@@ -948,7 +987,7 @@ document.querySelectorAll('[data-stage-colors]').forEach((picker) => {
 const geoRows = document.querySelectorAll('tr[data-geometry]');
 
 function highlightGeo(key) {
-  document.querySelectorAll('[data-geometry]').forEach((el) => el.classList.toggle('is-hl', el.dataset.geometry === key));
+  document.querySelectorAll('[data-geometry]').forEach((el) => el.classList.toggle('is-highlighted', el.dataset.geometry === key));
 }
 
 geoRows.forEach((row) => {
@@ -977,7 +1016,7 @@ if (sizePicks.length) {
 // En escritorio y sin movimiento reducido, fija la escena y reparte los
 // detalles a lo largo del scroll: --r (0 → 1) hace subir la imagen de cada
 // detalle sobre la anterior; el texto cambia a mitad de la subida.
-document.querySelectorAll('[data-resolve]').forEach((section) => {
+document.querySelectorAll('[data-scroll-story]').forEach((section) => {
   const track = section.querySelector('.scroll-story__track');
   const stage = section.querySelector('.scroll-story__stage');
   const items = [...section.querySelectorAll('.scroll-story__item')];
@@ -1068,7 +1107,7 @@ document.querySelectorAll('[data-ofy-film]').forEach((root) => {
   const sync = () => {
     const paused = video.paused;
     icon.textContent = paused ? 'play_arrow' : 'pause';
-    label.textContent = paused ? 'Reproducir' : 'Pausa';
+    label.textContent = paused ? 'Reproducir' : 'Pausar';
   };
   video.addEventListener('play', sync);
   video.addEventListener('pause', sync);
@@ -1232,16 +1271,16 @@ document.querySelectorAll('[data-in-use]').forEach((root) => {
 // se mueve y la de delante (la que entra) se desplaza un poco más. Sin zoom ni
 // huecos. Sin vuelta al inicio: en la primera y en la última foto se desactiva
 // la flecha correspondiente y el autoplay se detiene al llegar al final.
-document.querySelectorAll('[data-slides]').forEach((root) => {
+document.querySelectorAll('[data-gallery]').forEach((root) => {
   const track = root.querySelector('.gallery__track');
-  const current = root.querySelector('[data-slides-current]');
-  const total = root.querySelector('[data-slides-total]');
+  const current = root.querySelector('[data-gallery-current]');
+  const total = root.querySelector('[data-gallery-total]');
   if (!track || !current || !total) return;
   const slides = [...track.children];
   if (!slides.length) return;
   const imgs = slides.map((slide) => slide.querySelector('img'));
-  const prev = root.querySelector('[data-slides-prev]');
-  const next = root.querySelector('[data-slides-next]');
+  const prev = root.querySelector('[data-gallery-prev]');
+  const next = root.querySelector('[data-gallery-next]');
   const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
   const pad = (n) => String(n).padStart(2, '0');
   const last = slides.length - 1;
@@ -1429,6 +1468,7 @@ const videoOpeners = document.querySelectorAll('[data-video-open]');
 if (videoOpeners.length) {
   const modal = document.createElement('dialog');
   modal.className = 'video-modal';
+  modal.setAttribute('closedby', 'any');
   modal.innerHTML = `
     <button class="video-modal__close" type="button" aria-label="Cerrar vídeo">
       <span class="material-symbols-outlined" aria-hidden="true">close</span>
@@ -1447,7 +1487,6 @@ if (videoOpeners.length) {
     if (bgVideo?.paused) bgVideo = null;
     bgVideo?.pause();
     modal.showModal();
-    document.body.style.overflow = 'hidden';
     lenis?.stop();
     player.play().catch(() => {}); // si el navegador bloquea el autoplay, quedan los controles
   }));
@@ -1457,13 +1496,11 @@ if (videoOpeners.length) {
     if (player.videoWidth) modal.style.setProperty('--ratio', `${player.videoWidth} / ${player.videoHeight}`);
   });
   modal.querySelector('.video-modal__close').addEventListener('click', () => modal.close());
-  // Clic en el fondo: el objetivo es el propio <dialog>, no el vídeo
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+  bindDialogDismiss(modal);
   modal.addEventListener('close', () => {
     player.pause();
     player.removeAttribute('src');
     player.load();
-    document.body.style.overflow = '';
     lenis?.start();
     bgVideo?.play().catch(() => {});
     bgVideo = null;
@@ -1473,23 +1510,20 @@ if (videoOpeners.length) {
 // Pop-ups de detalle ([data-dialog-open="id"] → <dialog id>) ---------------------
 // Tarjetas de «Cada Mendiz es única» en la ficha. El enlace apunta a la FAQ como
 // alternativa sin JS; con JS abre el <dialog>. Cierra con la X
-// ([data-dialog-close]), con Esc o al pulsar fuera del panel. El foco vuelve a
-// la tarjeta (lo hace <dialog> solo).
+// ([data-dialog-close]), con Esc o al pulsar fuera del panel (closedby="any").
+// El foco vuelve a la tarjeta (lo hace <dialog> solo).
 document.querySelectorAll('[data-dialog-open]').forEach((opener) => {
   const modal = document.getElementById(opener.dataset.dialogOpen);
   if (!(modal instanceof HTMLDialogElement)) return;
   opener.addEventListener('click', (e) => {
     e.preventDefault();
     modal.showModal();
-    document.body.style.overflow = 'hidden';
     lenis?.stop();
   });
   if (modal.dataset.dialogReady) return;
   modal.dataset.dialogReady = '';
   modal.querySelectorAll('[data-dialog-close]').forEach((btn) => btn.addEventListener('click', () => modal.close()));
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
   modal.addEventListener('close', () => {
-    document.body.style.overflow = '';
     lenis?.start();
   });
 });
@@ -1534,110 +1568,4 @@ if (homeHero && window.matchMedia('(prefers-reduced-motion: no-preference)').mat
   }
 }
 
-
-// MPL Concept en la home (.home-mpl, [data-mpl-feat]) -------------------------
-// Flechas para pasar de un modelo MPL a otro: cambian a la vez la foto en uso
-// de la izquierda, el recorte de la bici, el nombre con su precio y la
-// numeración «01 / 06». Foto por revelado: la nueva se descubre por encima
-// desde el lado de la navegación y la anterior queda debajo (.is-prev) hasta
-// que termina. La bici sale y entra escalonada. Como la galería de las fichas:
-// sin vuelta al inicio. En táctil, se puede deslizar sobre la tarjeta.
-// Las fotos y bicis se cargan y decodifican antes de llegar a la sección, para
-// que ninguna aparezca de golpe. Transiciones en css/home.css.
-document.querySelectorAll('[data-mpl-feat]').forEach((root) => {
-  const photos = [...root.querySelectorAll('.home-mpl__photo .home-mpl__slide')];
-  const bikes = [...root.querySelectorAll('.home-mpl__bike .home-mpl__slide')];
-  const models = [...root.querySelectorAll('.home-mpl__model')];
-  const prev = root.querySelector('[data-mpl-prev]');
-  const next = root.querySelector('[data-mpl-next]');
-  const current = root.querySelector('[data-mpl-current]');
-  const total = photos.length;
-  if (total < 2 || bikes.length !== total || models.length !== total || !prev || !next) return;
-
-  const DURATION = 1200; // = --home-mpl-dur
-  const pad = (n) => String(n).padStart(2, '0');
-  let active = 0;
-  let prevTimer = 0;
-  const leaveTimers = new WeakMap();
-
-  // Precarga: al acercarse la sección, todas las imágenes pasan a carga
-  // inmediata y se decodifican
-  const warm = () => [...photos, ...bikes].forEach((img) => {
-    img.loading = 'eager';
-    if (img.decode) img.decode().catch(() => {});
-  });
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      io.disconnect();
-      warm();
-    }, { rootMargin: '600px 0px' });
-    io.observe(root);
-  } else warm();
-
-  const setHidden = (el, hidden) => {
-    if (hidden) el.setAttribute('aria-hidden', 'true');
-    else el.removeAttribute('aria-hidden');
-  };
-
-  const go = (to) => {
-    if (to < 0 || to >= total || to === active) return;
-    const from = active;
-    const forward = to > from;
-    root.style.setProperty('--home-mpl-dir', forward ? '1' : '-1');
-    root.classList.toggle('home-mpl--back', !forward);
-
-    // Foto: la que estaba pasa debajo; la nueva parte del recorte cerrado
-    clearTimeout(prevTimer);
-    photos.forEach((p) => p.classList.remove('is-prev'));
-    const out = photos[from];
-    const inn = photos[to];
-    out.classList.remove('is-active');
-    out.classList.add('is-prev');
-    inn.classList.add('is-active', 'is-entering');
-    void inn.offsetWidth; // fija el punto de partida antes de animar
-    inn.classList.remove('is-entering');
-    prevTimer = setTimeout(() => out.classList.remove('is-prev'), DURATION + 100);
-
-    // Bici: sale la actual y entra la nueva (retardo en el CSS)
-    const bikeOut = bikes[from];
-    clearTimeout(leaveTimers.get(bikeOut));
-    bikes[to].classList.remove('is-leaving');
-    bikeOut.classList.remove('is-active');
-    bikeOut.classList.add('is-leaving');
-    leaveTimers.set(bikeOut, setTimeout(() => bikeOut.classList.remove('is-leaving'), DURATION));
-    bikes[to].classList.add('is-active');
-
-    models[from].classList.remove('is-active');
-    models[to].classList.add('is-active');
-    models[from].tabIndex = -1;
-    models[to].removeAttribute('tabindex');
-    [photos, bikes, models].forEach((items) => {
-      setHidden(items[from], true);
-      setHidden(items[to], false);
-    });
-
-    active = to;
-    if (current) current.textContent = pad(active + 1);
-    prev.disabled = active === 0;
-    next.disabled = active === total - 1;
-  };
-
-  prev.addEventListener('click', () => go(active - 1));
-  next.addEventListener('click', () => go(active + 1));
-
-  // Deslizar en táctil (gesto claramente horizontal)
-  let x0 = null;
-  let y0 = 0;
-  root.addEventListener('touchstart', (e) => {
-    x0 = e.touches[0].clientX;
-    y0 = e.touches[0].clientY;
-  }, { passive: true });
-  root.addEventListener('touchend', (e) => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    const dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) go(active + (dx < 0 ? 1 : -1));
-  }, { passive: true });
-});
+})();
