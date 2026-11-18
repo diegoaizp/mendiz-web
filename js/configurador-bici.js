@@ -8,8 +8,8 @@
    Datos: window.MENDIZ_F14 (js/data/f14-montajes.js) y window.MENDIZ_F14_COLORES
    (js/data/f14-colores.js). Lee de la URL ?montaje=, ?talla= y el color:
      de serie       ?color=blanco
-     personalizado  ?pintura=personalizada&color=…&acabado=…&trama=…
-                    &acabado-trama=…&pegatinas=…
+     personalizado  ?pintura=personalizada&acabado=…&diseno=…&color=…
+                    &color2=…&pegatinas=…   (?trama=… de enlaces antiguos = corte F14)
 
    · Cuadro (SL | SLP) → filtra los grupos.
    · Grupo → filtra las ruedas. Grupo + ruedas = un montaje de serie, que
@@ -17,8 +17,10 @@
      ese grupo las tiene; si no, se cargan las más económicas.
    · Ruedas: se cambian con el lápiz en Componentes, entre las
      que admite el grupo. Elegir unas carga su montaje.
-   · Color: tres de serie (incluidos) o personalizado (+100 €, trama +100 €,
-     premium +190 €).
+   · Color: tres de serie (incluidos) o personalizado (+100 €, corte +100 €,
+     premium +190 €). El personalizador va por pasos (acabado, diseño, color
+     principal, color secundario, pegatinas): uno abierto cada vez y, al
+     contestar, se abre el siguiente.
    ========================================================================== */
 
 (() => {
@@ -31,11 +33,13 @@
 
   // Colores ------------------------------------------------------------------
   const FINISHES = { mate: 'Mate', brillo: 'Brillo' };
-  const TIERS = { std: 'Estándar', premium: 'Premium' };
   const COLORS = [...PZ.colores.std, ...PZ.colores.premium];
   const find = (list, id) => list.find((x) => x.id === id);
   const colorOf = (id) => find(COLORS, id);
-  const tramaOf = (id) => find(PZ.tramas, id);
+  const disenoOf = (id) => find(PZ.disenos, id);
+  const color2Of = (diseno, id) => find(disenoOf(diseno)?.colores2 || [], id);
+  // Un corte se puede elegir cuando ya tiene sus capas de color secundario
+  const isReady = (d) => d.id === 'liso' || d.colores2?.length > 0;
   const pegOf = (id) => find(PZ.pegatinas, id);
   const serieOf = (id) => find(PZ.serie, id);
   const tierOf = (id) => (find(PZ.colores.premium, id) ? 'premium' : 'std');
@@ -51,10 +55,14 @@
     { id: 'XL', stack: 594, reach: 411 },
   ];
 
-  // Jerarquía de la ficha técnica: grupo > etiqueta corta > valor
+  // Componentes que se ven (y se cambian) en la columna del configurador, en
+  // una sola lista sin grupos. El resto solo sale en el resumen («Tu F14»).
+  const PARTS_SHOWN = [['Cuadro', 'Cuadro'], ['Bielas', 'Bielas'], ['Platos', 'Platos'], ['Ruedas', 'Ruedas'], ['Manillar', 'Manillar y potencia'], ['Sillín', 'Sillín']];
+
+  // Jerarquía de la ficha técnica (resumen): grupo > etiqueta corta > valor
   const GROUPS = [
     ['Conjunto cuadro', [['Cuadro', 'Cuadro']]],
-    ['Transmisión', [['Mandos', 'Mandos'], ['Cambio', 'Cambio'], ['Desviador', 'Desviador'], ['Bielas', 'Bielas'], ['Cassette', 'Cassette']]],
+    ['Transmisión', [['Mandos', 'Mandos'], ['Cambio', 'Cambio'], ['Desviador', 'Desviador'], ['Bielas', 'Bielas'], ['Platos', 'Platos'], ['Cassette', 'Cassette']]],
     ['Frenos', [['Frenos', 'Frenos'], ['Disco', 'Discos']]],
     ['Ruedas', [['Ruedas', 'Ruedas']]],
     ['Cockpit', [['Manillar', 'Manillar y potencia']]],
@@ -99,38 +107,45 @@
   function paintFromUrl() {
     const c = params.get('color');
     const serie = serieOf(c) ? c : PZ.serie[0].id;
-    const custom = lookOfSerie(serieOf(serie));
+    const finish = FINISHES[params.get('acabado')] ? params.get('acabado') : serieOf(serie).acabado;
+    const custom = lookOfSerie(serieOf(serie), finish);
     const isCustom = params.get('pintura') === 'personalizada' || (c && !serieOf(c) && colorOf(c));
     if (isCustom) {
       if (colorOf(c)) custom.c1 = c;
-      if (FINISHES[params.get('acabado')]) custom.finish = params.get('acabado');
-      if (tramaOf(params.get('trama')) && tierOf(custom.c1) === 'std') custom.trama = params.get('trama');
-      if (FINISHES[params.get('acabado-trama')]) custom.tramaFinish = params.get('acabado-trama');
+      // ?trama= viene de enlaces anteriores al paso «Diseño»: era el corte F14
+      const oldTrama = params.get('trama') && params.get('trama') !== 'none' ? params.get('trama') : null;
+      const d = disenoOf(params.get('diseno')) || (oldTrama ? disenoOf('corte-f14') : null);
+      if (d && d.id !== 'liso' && isReady(d) && tierOf(custom.c1) === 'std') {
+        custom.diseno = d.id;
+        custom.c2 = color2Of(d.id, params.get('color2') || oldTrama)?.id || d.colores2[0].id;
+      }
       if (pegOf(params.get('pegatinas'))) custom.peg = params.get('pegatinas');
     }
-    return { mode: isCustom ? 'custom' : 'serie', serie, custom };
+    return { mode: isCustom ? 'custom' : 'serie', serie, finish, custom };
   }
-  function lookOfSerie(s) {
-    return { c1: s.color, finish: s.acabado, trama: 'none', tramaFinish: 'mate', peg: s.pegatinas };
+  function lookOfSerie(s, finish = s.acabado) {
+    return { c1: s.color, finish, diseno: 'liso', c2: null, peg: s.pegatinas };
   }
 
   const state = {
     build: byCode(params.get('montaje')) || byCode(DEFAULT_BUILD),
     paint: paintFromUrl(),
+    origin: params.get('origen') === '3d' ? '3d' : 'psd',
     size: SIZES.some((s) => s.id === params.get('talla')) ? params.get('talla') : null,
     picks: {},      // clave del componente → índice de la opción elegida (0 = de serie)
     open: null,     // componente con las opciones abiertas
   };
 
   // Lo que se ve en la bici, sea de serie o personalizado
-  const look = (p = state.paint) => (p.mode === 'serie' ? lookOfSerie(serieOf(p.serie)) : p.custom);
+  // El acabado (mate/brillo) es uno solo para serie y personalizado
+  const look = (p = state.paint) => (p.mode === 'serie' ? lookOfSerie(serieOf(p.serie), p.finish) : { ...p.custom, finish: p.finish });
 
   // Incremento de precio por color personalizado
   function colorExtra(p = state.paint) {
     if (p.mode !== 'custom') return 0;
     const c = p.custom;
     if (tierOf(c.c1) === 'premium') return PZ.precios.premium;
-    return PZ.precios.color + (c.trama !== 'none' ? PZ.precios.trama : 0);
+    return PZ.precios.color + (c.diseno !== 'liso' ? PZ.precios.corte : 0);
   }
 
   // «Blanco · brillo» o «Rojo · mate · personalizado»
@@ -138,19 +153,37 @@
     const l = look();
     return `${colorOf(l.c1).label} · ${lower(FINISHES[l.finish])}${state.paint.mode === 'custom' ? ' · personalizado' : ''}`;
   }
-  // Detalle del personalizado: «Rojo mate · trama en negro · pegatinas en oro»
+  // Detalle del personalizado: «Rojo mate · corte F14 en negro · pegatinas en oro»
   function customText(c = state.paint.custom) {
     return [
-      `${colorOf(c.c1).label} ${lower(FINISHES[c.finish])}`,
-      c.trama !== 'none' ? `trama en ${lower(tramaOf(c.trama).label)}` : '',
+      `${colorOf(c.c1).label} ${lower(FINISHES[state.paint.finish])}`,
+      c.diseno !== 'liso' ? `${lower(disenoOf(c.diseno).label)} en ${lower(color2Of(c.diseno, c.c2).label)}` : '',
       `pegatinas en ${lower(pegOf(c.peg).label)}`,
     ].filter(Boolean).join(' · ');
   }
   const buildText = (b = state.build) => `${b.grupo} · ${b.componentes.Ruedas}`;
 
   // Valor de serie de cada componente
+  // Bielas del dato separadas en modelo y platos (desarrollos):
+  //   «Shimano 105 7100 34/50»         → 105 7100 · [34/50]
+  //   «Campagnolo 34-50/32-48»         → Campagnolo · [34/50, 32/48]
+  //   «Shimano Ultegra 34/50 o 36/52»  → Shimano Ultegra · [34/50, 36/52]
+  function crankOf(b = state.build) {
+    const v = b.componentes.Bielas;
+    const norm = (x) => x.replace('-', '/');
+    let m = v.match(/^(.*?)\s+(\d+-\d+(?:\/\d+-\d+)+)$/);
+    if (m) return { model: m[1], platos: m[2].split('/').map(norm) };
+    m = v.match(/^(.*?)\s+(\d+[/-]\d+(?:\s+o\s+\d+[/-]\d+)+)$/);
+    if (m) return { model: m[1], platos: m[2].split(/\s+o\s+/).map(norm) };
+    m = v.match(/^(.*?)\s+(\d+[/-]\d+)$/);
+    if (m) return { model: m[1], platos: [norm(m[2])] };
+    return { model: v, platos: [] };
+  }
+
   function baseValue(key, b = state.build) {
     const c = b.componentes;
+    if (key === 'Bielas') return crankOf(b).model;
+    if (key === 'Platos') return crankOf(b).platos[0] || 'Según montaje';
     if (key === 'Cuadro') return `F14 ${b.cuadro} · carbono MonoShell EPS+`;
     if (key === 'Manillar') return `${c.Manillar}, potencia ${c.Potencia.toLowerCase()}`;
     return c[key];
@@ -181,7 +214,23 @@
       });
     }
 
-    if (key === 'Bielas' || key === 'Cassette') {
+    // Platos: los desarrollos que admite el montaje (solo si hay más de uno)
+    if (key === 'Platos') {
+      const { platos } = crankOf(b);
+      if (platos.length < 2) return null;
+      return platos.map((v) => ({ label: v, value: v, delta: 0 }));
+    }
+
+    // Bielas: solo la longitud, sin repetir el modelo. En la fila se ve la
+    // opción («Según talla (recomendada)», «172,5 mm»…); en el resumen, el
+    // modelo con la longitud. Los platos van en su propia fila.
+    if (key === 'Bielas') {
+      return ['Según talla (recomendada)', '170 mm', '172,5 mm', '175 mm'].map((l, i) => ({
+        label: l, row: l, value: `${value} · ${i === 0 ? 'según talla' : l}`, delta: 0, example: true,
+      }));
+    }
+
+    if (key === 'Cassette') {
       // Variantes en el dato: «Campagnolo 34-50/32-48»
       const token = value.split(' ').find((t) => /^\d+-\d+(?:\/\d+-\d+)+$/.test(t));
       if (token) {
@@ -192,11 +241,6 @@
       const alt = value.match(/^(.*?)\s*(\d+[/-]\d+(?:\s+o\s+\d+[/-]\d+)+)$/);
       if (alt) {
         return alt[2].split(/\s+o\s+/).map((v) => ({ label: `${alt[1]} ${v}`, value: `${alt[1]} ${v}`, delta: 0 }));
-      }
-      if (key === 'Bielas') {
-        return ['Según talla (recomendada)', '170 mm', '172,5 mm', '175 mm'].map((l, i) => ({
-          label: l, value: i === 0 ? value : `${value} · ${l}`, delta: 0, example: true,
-        }));
       }
       return null;
     }
@@ -283,13 +327,13 @@
   // Carga un montaje. Los componentes cambiados se conservan si el nuevo
   // montaje ofrece la misma opción; open deja abierto ese componente.
   function loadBuild(b, open = null) {
-    const kept = Object.keys(state.picks).map((k) => [k, current(k).value]);
+    const kept = Object.keys(state.picks).map((k) => [k, current(k).opt?.row ?? current(k).value]);
     state.build = b;
     state.picks = {};
     state.open = open;
     applyPhoto();
     kept.forEach(([k, v]) => {
-      const i = optionsFor(k)?.findIndex((o) => o.value === v) ?? -1;
+      const i = optionsFor(k)?.findIndex((o) => (o.row ?? o.value) === v) ?? -1;
       if (i > 0) state.picks[k] = i;
     });
     render();
@@ -329,12 +373,16 @@
   };
   let photoToken = 0;
 
+  const colorLayer = (color) => state.origin === '3d' ? `octane/${color.capa}` : color.capa;
+
+  const secondaryLayer = (color) => state.origin === '3d' && color.capa3d ? color.capa3d : color.capa;
+
   function applyPhoto() {
     const l = look();
     const want = {
       sombra: LAYER(PZ.fijas.sombra),
-      color: LAYER(colorOf(l.c1).capa),
-      trama: l.trama !== 'none' ? LAYER(tramaOf(l.trama).capa) : null,
+      color: LAYER(colorLayer(colorOf(l.c1))),
+      color2: l.diseno !== 'liso' ? LAYER(secondaryLayer(color2Of(l.diseno, l.c2))) : null,
       pegatinas: LAYER(pegOf(l.peg).capa),
       brillos: l.finish === 'brillo' ? LAYER(PZ.fijas.brillos) : null,
       componentes: LAYER(PZ.fijas.componentes),
@@ -345,6 +393,9 @@
     Promise.all(Object.values(want).filter(Boolean).map(preload)).then(() => {
       clearTimeout(slow);
       if (token !== photoToken) return;
+      // En los cortes de pintura el barniz cubre los dos colores del cuadro.
+      if (color2Of(l.diseno, l.c2)?.capa3d) slots.brillos.before(slots.color2);
+      else slots.color2.before(slots.brillos);
       Object.entries(want).forEach(([k, name]) => {
         const img = slots[k];
         if (!img) return;
@@ -364,6 +415,35 @@
   // 3 · Colores: tres de serie + «Personalizado» ------------------------------
   const colorsBox = $('[data-configurator-colors]');
 
+  const originBox = $('[data-configurator-origin]');
+  // Selector interno y temporal (para comparar imágenes): botones pequeños
+  originBox.insertAdjacentHTML('beforeend', [['psd', 'PSD', 'Versión actual'], ['3d', '3D', 'Nueva versión']]
+    .map(([value, title, sub]) => `
+      <label class="configurator-origin__opt" title="${sub}">
+        <input type="radio" name="configurator-origin" value="${value}"${state.origin === value ? ' checked' : ''}><span>${title}</span>
+      </label>`)
+    .join(''));
+  originBox.addEventListener('change', (event) => {
+    state.origin = event.target.value;
+    applyPhoto();
+    syncUrl();
+  });
+
+  // Acabado general (mate / brillo): afecta a los de serie y al personalizado
+  const finishBox = $('[data-configurator-finish]');
+  function renderFinish() {
+    clearCards(finishBox);
+    finishBox.insertAdjacentHTML('beforeend', Object.entries(FINISHES).map(([v, l]) => card({
+      name: 'configurator-finish', value: v, checked: v === state.paint.finish, title: l,
+    })).join(''));
+  }
+  finishBox.addEventListener('change', (e) => {
+    if (e.target.name !== 'configurator-finish') return;
+    state.paint.finish = state.paint.custom.finish = e.target.value;
+    paintChanged();
+    refocus(finishBox, 'configurator-finish');
+  });
+
   function renderColors() {
     const p = state.paint;
     const isCustom = p.mode === 'custom';
@@ -375,7 +455,7 @@
         checked: !isCustom && p.serie === s.id,
         lead: chip(c.sw),
         title: esc(c.label),
-        sub: `${FINISHES[s.acabado]} · pegatinas en ${esc(lower(pegOf(s.pegatinas).label))}`,
+        sub: `${FINISHES[p.finish]} · pegatinas en ${esc(lower(pegOf(s.pegatinas).label))}`,
         aside: 'Incluido',
         asideMuted: true,
       });
@@ -387,7 +467,7 @@
       attrs: ' aria-haspopup="dialog" aria-controls="configurator-customizer"',
       lead: chip(isCustom ? colorOf(p.custom.c1).sw : RAINBOW),
       title: 'Personalizado',
-      sub: isCustom ? esc(customText()) : 'Color, trama, pegatinas y acabado',
+      sub: isCustom ? esc(customText()) : 'Acabado, diseño, colores y pegatinas',
       aside: isCustom ? delta(colorExtra()) : `Desde +${eur(PZ.precios.color)}`,
       trail: '<span class="configurator-card__go material-symbols-outlined" aria-hidden="true">chevron_right</span>',
     });
@@ -411,82 +491,187 @@
   colorsBox.addEventListener('pointerover', (e) => {
     const input = e.target.closest('.configurator-card')?.querySelector('input[name="configurator-color"]');
     const s = input && serieOf(input.value);
-    if (s) [colorOf(s.color).capa, pegOf(s.pegatinas).capa].forEach((n) => preload(LAYER(n)).catch(() => {}));
+    if (s) [colorLayer(colorOf(s.color)), pegOf(s.pegatinas).capa].forEach((n) => preload(LAYER(n)).catch(() => {}));
   });
 
   // 4 · Personalizador (panel lateral) ---------------------------------------
   // <dialog> modal: entra desde la derecha y tapa la columna. Lo elegido se
   // ve en la foto al momento; «Aplicar color» lo confirma y cerrar (Cancelar, Esc)
   // vuelve a como estaba al abrirlo.
+  //
+  // Va por pasos, como un cuestionario: uno abierto cada vez; cada cabecera
+  // dice lo elegido y su precio, y el número pasa a ✓ al contestarlo. Un paso
+  // no se abre hasta contestar los anteriores. Acabado y diseño avanzan solos
+  // al elegir; los de muestras de color, con «Continuar» (para probar varias).
   const pz = $('[data-customizer]');
   const pzBody = $('[data-customizer-body]');
   const pageScroll = window.MENDIZ?.lenis || null;
   let snapshot = null;
-  const lastPick = { std: null, premium: null };  // para volver al último color de cada tipo
+  let lastStd = null;                // último color estándar, por si un corte no admite el premium elegido
+  const steps = { open: null, done: new Set() };
 
-  const PZ_LISTS = { 'customizer-primary': COLORS, 'customizer-pattern': PZ.tramas, 'customizer-decals': PZ.pegatinas };
+  const STEPS = [
+    { id: 'finish', title: 'Acabado' },
+    { id: 'diseno', title: 'Diseño' },
+    { id: 'c1', title: 'Color principal' },
+    { id: 'c2', title: 'Color secundario', skip: (c) => c.diseno === 'liso' },
+    { id: 'peg', title: 'Pegatinas' },
+  ];
+  const visibleSteps = () => STEPS.filter((st) => !st.skip?.(state.paint.custom));
+  const isLocked = (id) => {
+    const list = visibleSteps();
+    return list.slice(0, list.findIndex((st) => st.id === id)).some((st) => !steps.done.has(st.id));
+  };
+  const isComplete = () => visibleSteps().every((st) => steps.done.has(st.id));
+
+  // Muestras: nombre del input → lista de opciones y valor elegido
+  const PZ_LISTS = {
+    'customizer-primary': () => COLORS,
+    'customizer-secondary': () => disenoOf(state.paint.custom.diseno).colores2 || [],
+    'customizer-decals': () => PZ.pegatinas,
+  };
   const pzValue = (name) => {
     const c = state.paint.custom;
     if (name === 'customizer-primary') return colorOf(c.c1).label;
-    if (name === 'customizer-pattern') return tramaOf(c.trama).label;
+    if (name === 'customizer-secondary') return color2Of(c.diseno, c.c2)?.label || '';
     return pegOf(c.peg).label;
   };
 
+  // Lo elegido y el precio de cada paso, para su cabecera
+  function stepSummary(id) {
+    const c = state.paint.custom;
+    switch (id) {
+      case 'finish': return { value: FINISHES[state.paint.finish], price: '' };
+      case 'diseno': return { value: disenoOf(c.diseno).label, price: c.diseno !== 'liso' ? `+${eur(PZ.precios.corte)}` : '' };
+      case 'c1': return {
+        value: pzValue('customizer-primary'),
+        price: `+${eur(tierOf(c.c1) === 'premium' ? PZ.precios.premium : PZ.precios.color)}`,
+        name: 'customizer-primary',
+      };
+      case 'c2': return { value: pzValue('customizer-secondary'), price: '', name: 'customizer-secondary' };
+      default: return { value: pzValue('customizer-decals'), price: '', name: 'customizer-decals' };
+    }
+  }
+
   function renderPz() {
     const c = state.paint.custom;
-    const tier = tierOf(c.c1);
-    const swatch = (name, item, checked) => `
-            <label class="configurator-color configurator-color--lg" title="${esc(item.label)}">
-              <input type="radio" name="${name}" value="${item.id}"${checked ? ' checked' : ''}>
-              <span class="configurator-color__dot" style="--sw:${item.sw}" aria-hidden="true"></span>
-              <span class="visually-hidden">${esc(item.label)}</span>
-            </label>`;
-    // Campo con título, valor elegido (cambia al pasar por las muestras) y muestras
-    const field = (id, title, name, list, value, price = '') => `
-          <div class="configurator-customizer__field">
-            <p class="configurator-customizer__label" id="${id}"><span class="configurator-subtitle">${title}</span><span class="configurator-customizer__value" data-customizer-value="${name}">${esc(pzValue(name))}</span>${price}</p>
-            <div class="configurator-colors configurator-colors--lg" role="radiogroup" aria-labelledby="${id}">${list.map((i) => swatch(name, i, i.id === value)).join('')}
-            </div>
-          </div>`;
-    const finish = (id, title, name, value) => `
-          <div class="configurator-customizer__field">
-            <p class="configurator-customizer__sublabel" id="${id}">${title}</p>
-            <div class="configurator-cards configurator-cards--2 configurator-cards--sm" role="radiogroup" aria-labelledby="${id}">${Object.entries(FINISHES).map(([v, l]) => card({ name, value: v, checked: v === value, title: l })).join('')}
-            </div>
-          </div>`;
+    const list = visibleSteps();
+    const swatch = (name, item, checked, disabled = false) => `
+              <label class="configurator-color configurator-color--lg" title="${esc(item.label)}">
+                <input type="radio" name="${name}" value="${item.id}"${checked ? ' checked' : ''}${disabled ? ' disabled' : ''}>
+                <span class="configurator-color__dot" style="--sw:${item.sw}" aria-hidden="true"></span>
+                <span class="visually-hidden">${esc(item.label)}</span>
+              </label>`;
+    const swatches = (labelId, name, items, value, disabled = false) => `
+            <div class="configurator-colors configurator-colors--lg" role="radiogroup" aria-labelledby="${labelId}">${items.map((i) => swatch(name, i, i.id === value, disabled)).join('')}
+            </div>`;
+    const next = (id) => {
+      const last = list[list.length - 1].id === id;
+      return `
+            <button class="btn btn--sm configurator-step__next" type="button" data-step-next="${id}">${last ? 'Terminar' : 'Continuar'}</button>`;
+    };
 
-    pzBody.innerHTML = `
-        <section class="configurator-customizer__section">
-          <div class="configurator-customizer__field">
-            <p class="configurator-customizer__label" id="customizer-type-label"><span class="configurator-subtitle">Tipo de color</span></p>
-            <div class="configurator-cards configurator-cards--2" role="radiogroup" aria-labelledby="customizer-type-label">${['std', 'premium'].map((t) => card({
-              name: 'customizer-type', value: t, checked: t === tier, title: TIERS[t],
-              sub: `+${eur(t === 'premium' ? PZ.precios.premium : PZ.precios.color)}`,
+    // Contenido de cada paso
+    const body = {
+      finish: (labelId) => `
+            <div class="configurator-cards configurator-cards--2 configurator-cards--sm" role="radiogroup" aria-labelledby="${labelId}">${Object.entries(FINISHES).map(([v, l]) => card({
+              name: 'customizer-finish', value: v, checked: v === state.paint.finish, title: l,
             })).join('')}
             </div>
+            <p class="configurator-customizer__note">El acabado no cambia el precio.</p>`,
+      diseno: (labelId) => `
+            <div class="configurator-cards configurator-cards--sm" role="radiogroup" aria-labelledby="${labelId}">${PZ.disenos.map((d) => card({
+              name: 'customizer-design',
+              value: d.id,
+              checked: d.id === c.diseno,
+              title: esc(d.label),
+              sub: esc(d.sub),
+              aside: !isReady(d) ? 'Próximamente' : d.id === 'liso' ? '' : `+${eur(PZ.precios.corte)}`,
+              asideMuted: !isReady(d),
+              attrs: isReady(d) ? '' : ' disabled',
+            })).join('')}
+            </div>`,
+      c1: (labelId) => {
+        const premiumOff = c.diseno !== 'liso';
+        return `${swatches(labelId, 'customizer-primary', PZ.colores.std, c.c1)}
+            <p class="configurator-customizer__label" id="customizer-premium-label"><span class="configurator-customizer__sublabel">Premium</span><span class="configurator-customizer__price">+${eur(PZ.precios.premium)}</span></p>${swatches('customizer-premium-label', 'customizer-primary', PZ.colores.premium, c.c1, premiumOff)}${premiumOff ? `
+            <p class="configurator-customizer__note">Los colores premium van solo con el diseño de un color.</p>` : ''}${next('c1')}`;
+      },
+      c2: (labelId) => `${swatches(labelId, 'customizer-secondary', disenoOf(c.diseno).colores2 || [], c.c2)}${next('c2')}`,
+      peg: (labelId) => `${swatches(labelId, 'customizer-decals', PZ.pegatinas, c.peg)}${next('peg')}`,
+    };
+
+    const items = list.map((st, i) => {
+      const open = steps.open === st.id;
+      const done = steps.done.has(st.id);
+      const locked = isLocked(st.id);
+      const sum = stepSummary(st.id);
+      const showValue = open || done;
+      const titleId = `customizer-step-${st.id}-title`;
+      return `
+        <li class="configurator-step${open ? ' is-open' : ''}${done ? ' is-done' : ''}${locked ? ' is-locked' : ''}">
+          <h3 class="configurator-step__head">
+            <button class="configurator-step__toggle" type="button" data-step-toggle="${st.id}" aria-expanded="${open}" aria-controls="customizer-step-${st.id}"${locked ? ' disabled' : ''}>
+              <span class="configurator-step__num" aria-hidden="true">${done && !open ? '<span class="material-symbols-outlined">check</span>' : i + 1}</span>
+              <span class="configurator-step__text">
+                <span class="configurator-step__title" id="${titleId}">${st.title}</span>${showValue ? `
+                <span class="configurator-step__value"${sum.name ? ` data-customizer-value="${sum.name}"` : ''}>${esc(sum.value)}</span>` : ''}
+              </span>${showValue && sum.price ? `
+              <span class="configurator-step__price">${sum.price}</span>` : ''}
+              <span class="configurator-step__caret material-symbols-outlined" aria-hidden="true">chevron_right</span>
+            </button>
+          </h3>
+          <div class="configurator-step__body" id="customizer-step-${st.id}" data-step-body="${st.id}"${open ? '' : ' hidden'}>${open ? body[st.id](titleId) : ''}
           </div>
-        </section>
-        <section class="configurator-customizer__section">${field('customizer-primary-label', 'Color principal', 'customizer-primary', PZ.colores[tier], c.c1)}${finish('customizer-finish-label', 'Acabado', 'customizer-finish', c.finish)}
-        </section>
-        <section class="configurator-customizer__section">${tier === 'premium' ? `
-          <div class="configurator-customizer__field">
-            <p class="configurator-customizer__label"><span class="configurator-subtitle">Trama</span></p>
-            <p class="configurator-customizer__note">Los colores premium van sin trama.</p>
-          </div>` : `${field('customizer-pattern-label', 'Trama', 'customizer-pattern', PZ.tramas, c.trama, `<span class="configurator-customizer__price">+${eur(PZ.precios.trama)}</span>`)}${c.trama !== 'none' ? finish('customizer-pattern-finish-label', 'Acabado de la trama', 'customizer-pattern-finish', c.tramaFinish) : ''}`}
-        </section>
-        <section class="configurator-customizer__section">${field('customizer-decals-label', 'Pegatinas', 'customizer-decals', PZ.pegatinas, c.peg)}
-        </section>
-        <p class="configurator-customizer__note">Un color distinto a los de serie suma ${eur(PZ.precios.color)} al PVP y la trama, ${eur(PZ.precios.trama)} más. Los colores premium suman ${eur(PZ.precios.premium)}. El acabado no cambia el precio.</p>`;
+        </li>`;
+    }).join('');
+
+    pzBody.innerHTML = `
+        <ol class="configurator-steps">${items}
+        </ol>
+        <div class="configurator-steps__done"${isComplete() ? '' : ' hidden'}>
+          <span class="configurator-steps__check material-symbols-outlined" aria-hidden="true">check</span>
+          <div class="configurator-steps__done-text">
+            <p class="configurator-steps__done-title">Tu color está listo</p>
+            <p class="configurator-customizer__note">${esc(customText())}.</p>
+            <div class="configurator-steps__actions">
+              <button class="btn btn--sm" type="button" data-customizer-apply-done>Aplicar color</button>
+              <button class="btn btn--sm btn--secondary" type="button" data-customizer-restart>Volver a empezar</button>
+            </div>
+          </div>
+        </div>
+        <p class="configurator-customizer__note">Un color distinto a los de serie suma ${eur(PZ.precios.color)} al PVP y un corte, ${eur(PZ.precios.corte)} más. Los colores premium suman ${eur(PZ.precios.premium)} y van con el diseño de un color. El acabado no cambia el precio.</p>`;
     $('[data-customizer-extra]').textContent = `Color personalizado: +${eur(colorExtra())}`;
+  }
+
+  // Da un paso por contestado y abre el siguiente sin contestar (o ninguno)
+  function completeStep(id) {
+    steps.done.add(id);
+    const list = visibleSteps();
+    const from = list.findIndex((st) => st.id === id);
+    steps.open = list.slice(from + 1).find((st) => !steps.done.has(st.id))?.id || null;
+    renderPz();
+    const target = steps.open
+      ? pzBody.querySelector(`[data-step-toggle="${steps.open}"]`)
+      : pzBody.querySelector('.configurator-steps__done');
+    (steps.open ? target : pzBody.querySelector('[data-customizer-apply-done]'))?.focus({ preventScroll: true });
+    target?.closest('.configurator-step, .configurator-steps__done')?.scrollIntoView({ block: 'nearest', behavior: reduceMotion() ? 'auto' : 'smooth' });
   }
 
   function openPz() {
     snapshot = structuredClone(state.paint);
     if (state.paint.mode === 'serie') {
-      // Se empieza desde el color de serie que se está viendo
-      state.paint.custom = { ...lookOfSerie(serieOf(state.paint.serie)) };
+      // Se empieza desde el color de serie que se está viendo, con los pasos por contestar
+      state.paint.custom = { ...lookOfSerie(serieOf(state.paint.serie), state.paint.finish) };
       state.paint.mode = 'custom';
+      steps.done = new Set();
+      steps.open = STEPS[0].id;
+    } else {
+      // Ya personalizado: todos los pasos contestados y cerrados
+      steps.done = new Set(STEPS.map((st) => st.id));
+      steps.open = null;
     }
+    if (tierOf(state.paint.custom.c1) === 'std') lastStd = state.paint.custom.c1;
     renderPz();
     paintChanged();
     if (!pz.open) {
@@ -518,38 +703,99 @@
   $('[data-customizer-cancel]').addEventListener('click', () => closePz(false));
   $('[data-customizer-apply]').addEventListener('click', () => closePz(true));
 
+  // Acabado y diseño avanzan al elegir (evento change). Si se pulsa la opción
+  // que ya estaba marcada no hay change: se da el paso por contestado igual.
+  const ADVANCE_INPUTS = 'input[name="customizer-finish"], input[name="customizer-design"]';
+  let pressedChecked = null;
+  pzBody.addEventListener('pointerdown', (e) => {
+    const input = e.target.closest('.configurator-card')?.querySelector(ADVANCE_INPUTS);
+    pressedChecked = input?.checked ? input : null;
+  });
+  pzBody.addEventListener('keydown', (e) => {
+    if ((e.key === ' ' || e.key === 'Enter') && e.target.matches?.(ADVANCE_INPUTS) && e.target.checked) {
+      e.preventDefault();
+      completeStep(e.target.closest('[data-step-body]').dataset.stepBody);
+    }
+  });
+
+  // Cabeceras (abrir / cerrar un paso ya alcanzado) y «Continuar»
+  pzBody.addEventListener('click', (e) => {
+    if (pressedChecked && e.target === pressedChecked) {
+      const stepId = pressedChecked.closest('[data-step-body]').dataset.stepBody;
+      pressedChecked = null;
+      completeStep(stepId);
+      return;
+    }
+    const toggle = e.target.closest('[data-step-toggle]');
+    if (toggle && !toggle.disabled) {
+      const id = toggle.dataset.stepToggle;
+      steps.open = steps.open === id ? null : id;
+      renderPz();
+      pzBody.querySelector(`[data-step-toggle="${id}"]`)?.focus({ preventScroll: true });
+      return;
+    }
+    const nextBtn = e.target.closest('[data-step-next]');
+    if (nextBtn) { completeStep(nextBtn.dataset.stepNext); return; }
+    // «Aplicar color» del aviso final: lo mismo que el de arriba
+    if (e.target.closest('[data-customizer-apply-done]')) { closePz(true); return; }
+    // «Volver a empezar»: los pasos vuelven a estar por contestar, desde el
+    // primero; lo elegido se queda marcado para revisarlo paso a paso
+    if (e.target.closest('[data-customizer-restart]')) {
+      steps.done = new Set();
+      steps.open = STEPS[0].id;
+      renderPz();
+      pzBody.scrollTop = 0;
+      pzBody.querySelector(`[data-step-toggle="${steps.open}"]`)?.focus({ preventScroll: true });
+    }
+  });
+
   pzBody.addEventListener('change', (e) => {
     const t = e.target;
     const c = state.paint.custom;
+    let advance = false;
     switch (t.name) {
-      case 'customizer-type': {
-        const from = tierOf(c.c1);
-        if (t.value === from) return;
-        lastPick[from] = c.c1;
-        c.c1 = lastPick[t.value] || PZ.colores[t.value][0].id;
-        if (t.value === 'premium') c.trama = 'none';
+      case 'customizer-finish':
+        state.paint.finish = c.finish = t.value;
+        advance = true;
+        break;
+      case 'customizer-design': {
+        const d = disenoOf(t.value);
+        if (!d || !isReady(d)) return;
+        c.diseno = d.id;
+        if (d.id !== 'liso') {
+          if (!color2Of(d.id, c.c2)) c.c2 = d.colores2[0].id;
+          // Los premium no admiten corte: se vuelve al último estándar
+          if (tierOf(c.c1) === 'premium') c.c1 = lastStd || PZ.colores.std[0].id;
+        }
+        advance = true;
         break;
       }
-      case 'customizer-primary': c.c1 = t.value; break;
-      case 'customizer-finish': c.finish = t.value; break;
-      case 'customizer-pattern': c.trama = t.value; break;
-      case 'customizer-pattern-finish': c.tramaFinish = t.value; break;
+      case 'customizer-primary':
+        c.c1 = t.value;
+        if (tierOf(t.value) === 'std') lastStd = t.value;
+        break;
+      case 'customizer-secondary': c.c2 = t.value; break;
       case 'customizer-decals': c.peg = t.value; break;
       default: return;
     }
-    const scroll = pzBody.scrollTop;
-    renderPz();
-    pzBody.scrollTop = scroll;
-    pzBody.querySelector(`input[name="${t.name}"][value="${CSS.escape(t.value)}"]`)?.focus({ preventScroll: true });
+    const stepId = t.closest('[data-step-body]')?.dataset.stepBody;
+    if (advance && stepId) {
+      completeStep(stepId);
+    } else {
+      const scroll = pzBody.scrollTop;
+      renderPz();
+      pzBody.scrollTop = scroll;
+      pzBody.querySelector(`input[name="${t.name}"][value="${CSS.escape(t.value)}"]`)?.focus({ preventScroll: true });
+    }
     paintChanged();
   });
 
-  // Al pasar por una muestra: su nombre en el título del campo y su capa precargada
+  // Al pasar por una muestra: su nombre en la cabecera del paso y su capa precargada
   pzBody.addEventListener('pointerover', (e) => {
     const input = e.target.closest('.configurator-color')?.querySelector('input');
-    const item = input && find(PZ_LISTS[input.name] || [], input.value);
+    const item = input && find(PZ_LISTS[input.name]?.() || [], input.value);
     if (!item) return;
-    preload(LAYER(item.capa));
+    preload(LAYER(input.name === 'customizer-primary' ? colorLayer(item) : secondaryLayer(item))).catch(() => {});
     const val = pzBody.querySelector(`[data-customizer-value="${input.name}"]`);
     if (val) val.textContent = item.label;
   });
@@ -560,6 +806,7 @@
 
   // Tras cualquier cambio de pintura
   function paintChanged() {
+    renderFinish();
     applyPhoto();
     renderColors();
     renderSummary();
@@ -618,11 +865,8 @@
 
   // 6 · Componentes --------------------------------------------------------
   function renderParts() {
-    $('[data-configurator-parts]').innerHTML = GROUPS.map(([title, items]) => `
-      <div class="configurator-group">
-        <h3 class="configurator-group__title">${title}</h3>
-        <ul class="configurator-group__list">${items.map(([key, label]) => partRow(key, label)).join('')}</ul>
-      </div>`).join('');
+    $('[data-configurator-parts]').innerHTML = `
+      <ul class="configurator-group__list">${PARTS_SHOWN.map(([key, label]) => partRow(key, label)).join('')}</ul>`;
   }
 
   function partRow(key, label) {
@@ -636,7 +880,7 @@
     const text = `
           <div class="configurator-part__text">
             <span class="configurator-part__label">${esc(label)}</span>
-            <span class="configurator-part__value">${esc(value)}</span>
+            <span class="configurator-part__value">${esc(opt?.row || value)}</span>
             ${note ? `<span class="configurator-part__meta">${esc(note)}</span>` : ''}
           </div>`;
 
@@ -725,11 +969,10 @@
         ['Pegatinas', pegOf(l.peg).label],
       ]
       : [
-        ['Tipo', TIERS[tierOf(l.c1)]],
-        ['Color principal', `${esc(colorOf(l.c1).label)}${tierOf(l.c1) === 'premium' ? ' <span class="configurator-badge">Premium</span>' : ''}`, true],
         ['Acabado', FINISHES[l.finish]],
-        ['Trama', tramaOf(l.trama).label],
-        ...(l.trama !== 'none' ? [['Acabado de la trama', FINISHES[l.tramaFinish]]] : []),
+        ['Diseño', disenoOf(l.diseno).label],
+        ['Color principal', `${esc(colorOf(l.c1).label)}${tierOf(l.c1) === 'premium' ? ' <span class="configurator-badge">Premium</span>' : ''}`, true],
+        ...(l.diseno !== 'liso' ? [['Color secundario', color2Of(l.diseno, l.c2).label]] : []),
         ['Pegatinas', pegOf(l.peg).label],
         ['Precio del color', `+${eur(colorExtra())}`],
       ];
@@ -759,19 +1002,19 @@
     const p = state.paint;
     if (p.mode === 'serie') {
       q.set('color', p.serie);
+      q.set('acabado', p.finish);
     } else {
       const c = p.custom;
       q.set('pintura', 'personalizada');
+      q.set('acabado', p.finish);
+      q.set('diseno', c.diseno);
       q.set('color', c.c1);
-      q.set('acabado', c.finish);
-      if (c.trama !== 'none') {
-        q.set('trama', c.trama);
-        q.set('acabado-trama', c.tramaFinish);
-      }
+      if (c.diseno !== 'liso') q.set('color2', c.c2);
       q.set('pegatinas', c.peg);
     }
     if (state.size) q.set('talla', state.size);
     $$('[data-configurator-cta]').forEach((a) => a.setAttribute('href', `distribuidores.html?${q}`));
+    if (state.origin === '3d') q.set('origen', '3d');
     history.replaceState(null, '', `${location.pathname}?${q}`);
     document.title = `Configura tu F14 ${state.build.cuadro} · ${state.build.grupo} | Mendiz`;
     updateSaveState();
@@ -842,7 +1085,20 @@
     watched.forEach((_, el) => io.observe(el));
   }
 
+  // Fondo oscuro de la escena (se recuerda en este navegador)
+  const stage = $('.configurator__stage');
+  const backdropBtn = $('[data-configurator-backdrop]');
+  function setDark(on) {
+    stage.classList.toggle('is-dark', on);
+    backdropBtn.setAttribute('aria-pressed', String(on));
+    backdropBtn.querySelector('span').textContent = on ? 'Fondo claro' : 'Fondo oscuro';
+    try { localStorage.setItem('mendiz-configurator-dark', on ? '1' : '0'); } catch (e) { /* sin almacenamiento */ }
+  }
+  backdropBtn.addEventListener('click', () => setDark(!stage.classList.contains('is-dark')));
+  try { if (localStorage.getItem('mendiz-configurator-dark') === '1') setDark(true); } catch (e) { /* sin almacenamiento */ }
+
   renderSizes();
+  renderFinish();
   renderColors();
   applyPhoto();
   applySize();

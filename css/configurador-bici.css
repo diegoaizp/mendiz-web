@@ -81,6 +81,37 @@
   pointer-events: none;
   user-select: none;
 }
+/* Fondo oscuro de la escena (botón .configurator__backdrop, abajo a la derecha; en móvil, arriba) */
+.configurator__backdrop {
+  position: absolute;
+  right: var(--margin);
+  bottom: var(--s-4);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--target);
+  padding: 0 var(--s-3);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--c-ink);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.configurator__backdrop:hover { border-color: currentColor; }
+.configurator__backdrop:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.configurator__stage { transition: background var(--dur) var(--ease); }
+.configurator__stage.is-dark { background: #3a3a3c; }
+.configurator__stage.is-dark .configurator__ghost { color: rgb(0 0 0 / 0.12); }
+.configurator__stage.is-dark .configurator__back,
+.configurator__stage.is-dark .configurator__backdrop { color: #fff; }
+@media (max-width: 767px) {
+  .configurator__backdrop { top: var(--s-2); right: var(--s-4); bottom: auto; }
+}
+
 /* La bici por capas (sombra · color · trama · pegatinas · brillos ·
    componentes), todas del mismo lienzo 2500 × 1667 y apiladas en la misma
    caja. Hasta el 88 % del ancho y el 78 % del alto de la escena. */
@@ -203,6 +234,9 @@
 .configurator-card__go { flex: none; margin-left: calc(var(--s-2) * -1); font-size: 22px; color: var(--c-ink); transition: transform var(--dur-fast) var(--ease); }
 .configurator-card:hover .configurator-card__go { transform: translateX(3px); }
 .configurator-card .configurator-paint__chip { flex: none; }
+/* Opción aún no disponible («Próximamente») */
+.configurator-card:has(input:disabled) { cursor: not-allowed; border-color: var(--configurator-card-line); }
+.configurator-card:has(input:disabled) .configurator-card__name { color: var(--c-ink-3); }
 /* Tarjetas compactas (acabado dentro del personalizador) */
 .configurator-cards--sm .configurator-card { padding: var(--s-3) var(--s-4); }
 .configurator-cards--sm .configurator-card__name { font-size: var(--fs-base); line-height: var(--lh-body); letter-spacing: 0; }
@@ -280,6 +314,8 @@
 .configurator-color:hover .configurator-color__dot { transform: scale(0.92); }
 .configurator-color:has(input:checked)::after { border-color: var(--c-ink); }
 .configurator-color:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: 1px; }
+.configurator-color:has(input:disabled) { cursor: not-allowed; opacity: 0.3; }
+.configurator-color:has(input:disabled):hover .configurator-color__dot { transform: none; }
 /* Personalizador: muestras de 40 px en cuadrícula */
 .configurator-colors--lg { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: var(--s-1); }
 .configurator-color--lg { width: 52px; height: 52px; justify-self: center; }
@@ -573,6 +609,87 @@
 .configurator-customizer__price { margin-left: auto; font-size: var(--fs-base); font-variant-numeric: tabular-nums; color: var(--c-ink); }
 .configurator-customizer__sublabel { font-size: var(--fs-base); color: var(--c-ink); }
 .configurator-customizer__note { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--c-ink-3); }
+
+/* Pasos del personalizador (como un cuestionario) ---------------------------
+   <ol.configurator-steps> > <li.configurator-step [is-open|is-done|is-locked]>
+   Cabecera: número (✓ al contestar) · título y lo elegido · precio · flecha.
+   Solo un paso abierto; los que faltan por desbloquear, en gris. */
+.configurator-steps { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--c-line); }
+.configurator-step { border-top: 1px solid var(--c-line); }
+.configurator-step__head { margin: 0; font: inherit; }
+.configurator-step__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: var(--target);
+  padding: var(--s-5) 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--c-ink);
+  cursor: pointer;
+}
+.configurator-step__toggle:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.configurator-step__toggle:disabled { cursor: default; }
+.configurator-step__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--c-ink);
+  border-radius: 50%;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.configurator-step__num .material-symbols-outlined { font-size: 18px; }
+.configurator-step.is-done:not(.is-open) .configurator-step__num { background: var(--c-ink); color: var(--c-paper); }
+.configurator-step__text { display: grid; flex: 1; min-width: 0; }
+.configurator-step__title { font-size: var(--fs-lead); font-weight: var(--fw-medium); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); }
+.configurator-step__value { font-size: var(--fs-base); line-height: var(--lh-body); color: var(--c-ink-2); }
+.configurator-step__price { flex: none; font-size: var(--fs-base); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.configurator-step__caret { flex: none; font-size: 22px; transition: transform var(--dur-fast) var(--ease); }
+.configurator-step.is-open .configurator-step__caret { transform: rotate(90deg); }
+.configurator-step__toggle:not(:disabled):hover .configurator-step__title { text-decoration: underline; text-underline-offset: 0.2em; }
+.configurator-step.is-locked .configurator-step__toggle { color: var(--c-ink-3); }
+.configurator-step.is-locked .configurator-step__num { border-color: var(--c-line); }
+.configurator-step.is-locked .configurator-step__caret { visibility: hidden; }
+.configurator-step__body { display: grid; gap: var(--s-4); padding: 0 0 var(--s-6) calc(32px + var(--s-4)); }
+.configurator-step__body[hidden] { display: none; }
+.configurator-step__body .configurator-customizer__label { margin-top: var(--s-2); }
+.configurator-step__next { justify-self: start; margin-top: var(--s-2); }
+@media (max-width: 767px) { .configurator-step__body { padding-left: 0; } }
+
+/* Todos los pasos contestados */
+.configurator-steps__done { display: flex; align-items: flex-start; gap: var(--s-4); padding: var(--s-5); border-radius: var(--r-media); background: var(--c-subtle); }
+.configurator-steps__done[hidden] { display: none; }
+.configurator-steps__check { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--c-changed); font-size: 18px; color: #fff; }
+.configurator-steps__done-text { display: grid; gap: var(--s-1); min-width: 0; }
+.configurator-steps__done-title { font-size: var(--fs-base); font-weight: var(--fw-medium); color: var(--c-ink); }
+.configurator-steps__actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+
+/* Selector de origen de las imágenes (PSD / 3D): temporal e interno, discreto */
+.configurator-origin { margin: 0; padding: var(--s-3) 0 0; border: 0; border-top: 1px dashed var(--c-line); min-width: 0; }
+.configurator-origin__label { float: left; margin-right: var(--s-2); padding: 0; font-size: var(--fs-label); line-height: 28px; color: var(--c-ink-3); }
+.configurator-origin__opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin-right: var(--s-1);
+  padding: 0 10px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-control);
+  font-size: var(--fs-label);
+  color: var(--c-ink-3);
+  cursor: pointer;
+}
+.configurator-origin__opt input { position: absolute; opacity: 0; pointer-events: none; }
+.configurator-origin__opt:has(input:checked) { border-color: var(--c-ink-3); color: var(--c-ink); }
+.configurator-origin__opt:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 .configurator-customizer__foot {
   display: flex;

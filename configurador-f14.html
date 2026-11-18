@@ -704,6 +704,7 @@
 <div class="configurator__stage">
 <a class="configurator__back" href="f14-sl-slp.html#montajes"><span aria-hidden="true" class="material-symbols-outlined">arrow_back</span>F14 SL-SLP</a>
 <p aria-hidden="true" class="configurator__ghost display">F14</p>
+<button aria-pressed="false" class="configurator__backdrop" data-configurator-backdrop type="button"><svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="1.4" viewBox="0 0 18 18" width="18"><circle cx="9" cy="9" r="7"></circle><path d="M9 2a7 7 0 0 1 0 14z" fill="currentColor"></path></svg><span>Fondo oscuro</span></button>
 <!-- La bici por capas: todas comparten
                lienzo (2500 × 1667) y se apilan en este orden. Las pinta
                js/configurador-bici.js desde js/data/f14-colores.js. Los componentes
@@ -712,9 +713,9 @@
 <div aria-label="Mendiz F14 SL-SLP en blanco, vista lateral" class="configurator__bike" data-configurator-bike role="img">
 <img alt="" data-layer="sombra" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-sombra.webp" width="2500">
 <img alt="" data-layer="color" fetchpriority="high" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-c03-blanco.webp" width="2500">
-<img alt="" data-layer="trama" height="1667" hidden width="2500">
-<img alt="" data-layer="pegatinas" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-pegatinas-c01-negro.webp" width="2500">
 <img alt="" data-layer="brillos" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-brillos.webp" width="2500">
+<img alt="" data-layer="color2" height="1667" hidden width="2500">
+<img alt="" data-layer="pegatinas" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-pegatinas-c01-negro.webp" width="2500">
 <img alt="" data-layer="componentes" fetchpriority="high" height="1667" src="assets/img/f14-sl-slp/capas/f14sl-componentes.webp" width="2500">
 </div>
 </div>
@@ -752,10 +753,17 @@
 <section class="configurator-section">
 <div class="configurator-section__head">
 <h2 class="configurator-section__title" id="configurator-section-color">Colores</h2>
-<p class="configurator-section__hint">Elige uno de los tres colores de serie o diseña el tuyo.</p>
+<p class="configurator-section__hint">Elige el acabado y uno de los colores de serie, o diseña el tuyo.</p>
 </div>
+<fieldset class="configurator-cards configurator-cards--2" data-configurator-finish>
+<legend class="configurator-subtitle">Acabado</legend>
+</fieldset>
 <fieldset class="configurator-cards" data-configurator-colors>
 <legend class="visually-hidden">Color</legend>
+</fieldset>
+<!-- Temporal, solo para valorar internamente las imágenes (PSD / 3D) -->
+<fieldset class="configurator-origin" data-configurator-origin>
+<legend class="configurator-origin__label">Imágenes (interno)</legend>
 </fieldset>
 </section>
 <!-- Componentes (jerarquía de ficha técnica: grupo > etiqueta > valor) -->
@@ -811,8 +819,9 @@
 </div>
 <!-- ===================================================== PERSONALIZADOR
            Panel que entra desde la derecha y tapa toda la columna (en móvil,
-           todo lo que queda bajo la foto). Campos: tipo (estándar | premium), color principal y su
-           acabado, trama y su acabado, pegatinas. La foto cambia en directo;
+           todo lo que queda bajo la foto). Pasos (uno abierto cada vez, como un
+           cuestionario): acabado, diseño (un color o un corte), color principal,
+           color secundario (solo con corte) y pegatinas. La foto cambia en directo;
            arriba, «Aplicar color» lo confirma y «Cancelar» (o Esc) lo deja
            como estaba. Abajo, el precio. Contenido pintado desde
            js/data/f14-colores.js. -->
